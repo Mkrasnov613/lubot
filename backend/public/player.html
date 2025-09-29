@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>YT Player</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    html,body {margin:0;background:#111;color:#eee;font:14px system-ui}
+    .wrap{padding:8px}
+    .title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #yt{width:1280px;height:200px} /* підлаштуй під свою сцену */
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="status">Очікування…</div>
+    <div class="title" id="title"></div>
+  </div>
+  <div id="yt"></div>
+
+  <!-- 1) Підключаємо IFrame API -->
+  <script>
+    let socket, player, current;
+
+    localStorage.setItem('PLAYER_SECRET', process.env.PLAYER_SECRET)
+
+    // 2) Стандартне завантаження IFrame API
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+
+    // 3) Коли API готове — створюємо плеєр
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('yt', {
+        height: '200',
+        width: '1280',
+        playerVars: {
+          autoplay: 1,
+          controls: 0,
+          modestbranding: 1,
+          rel: 0,
+          playsinline: 1
+        },
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange
+        }
+      });
+    }
+
+    function onPlayerReady() {
+      // 4) Після готовності під’єднуємось до Socket.IO
+      socket = io();
+
+      // Отримуємо команду з сервера «грати наступний трек»
+      socket.on('player:play', ({ track }) => {
+        current = track;
+        const statusEl = document.getElementById('status');
+        const titleEl = document.getElementById('title');
+
+        if (!track) {
+          statusEl.textContent = 'Черга порожня';
+          titleEl.textContent = '';
+          player.stopVideo();
+          return;
+        }
+
+        statusEl.textContent = 'Відтворення';
+        titleEl.textContent = `${track.title} — заявка від ${track.requester}`;
+
+        // важливо: передаємо саме videoId
+        player.loadVideoById(track.videoId || extractVideoId(track.url));
+      });
+    }
+
+    function onPlayerStateChange(e) {
+      // 0–неініц., 1–грає, 2–пауза, 3–буфер, 5–cued, 0–ENDED
+      if (e.data === YT.PlayerState.ENDED) {
+        // повідомляємо сервер, що трек завершився
+        // (див. розділ нижче — «/api/next із секретом» або варіант через сокети)
+        fetch('/api/next', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-player-secret': localStorage.getItem('PLAYER_SECRET') || ''
+          },
+          body: '{}'
+        }).catch(()=>{});
+      }
+    }
+
+    // запасний витяг videoId з URL
+    function extractVideoId(url){
+      const m = String(url).match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/);
+      return m ? m[1] : url;
+    }
+  </script>
+</body>
+</html>

@@ -94,7 +94,7 @@
           return;
         }
 
-        const id = track.videoId || extractVideoId(track.url);
+        const id = track.videoId;
         titleEl.textContent = track.title;
         subEl.textContent   = `заявка від ${track.requester}`;
         rightEl.textContent = 'playing';
@@ -132,11 +132,6 @@
         },
         body:'{}'
       }).catch(()=>{});
-    }
-
-    function extractVideoId(url){
-      const m = String(url).match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/);
-      return m ? m[1] : url;
     }
   </script>
 </body>

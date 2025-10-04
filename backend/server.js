@@ -12,6 +12,7 @@ import { Server } from 'socket.io';
 import ytSearch from 'yt-search';
 import tmi from 'tmi.js';
 import cors from 'cors';
+import { channel } from 'diagnostics_channel';
 
 const app = express();
 const server = http.createServer(app);
@@ -67,7 +68,7 @@ async function resolveTrack(query, requester) {
     x.videoId && x.seconds > 0 && !x.live && !x.isLive && !x.isShorts
   );
 
-  const cand = { title: v?.title, url: `https://www.youtube.com/watch?v=${v.videoId}` };
+  const cand = { title: v?.title, url: v?.url };
   const chk = validateTrackCandidate(cand);
   if (!chk.ok) throw new Error(chk.reason);
 
@@ -138,6 +139,25 @@ tmiClient.on('message', async (channel, tags, message, self) => {
   }
 });
 
+// API for a website's input with Youtube search 
+app.get('/api/search', async (req, res) => {
+  const query = (req.query.q || '').trim(); //
+  if (!q) return res.json({ items: [] })   // checking if user provided a search query
+
+  const result = await ytSearch(query); 
+  const items = (result.videos || []).filter(v => v.videoId && !v.live && !v.isShorts).slice(0, 5).map(v => ({
+    id: v.videoId,
+    title: v.title,
+    durationSec: v.seconds,
+    thumb: v.thumbnail,
+    url: v.url,
+    channel: v.author?.name
+  }))                         // searching videos and returning the top 5 of the search 
+
+  return res.json({ items })
+})
+
+// API for a player to play next track 
 app.post('/api/next', assertPlayer, (_req, res) => {
   playNext();
   res.json({ ok: true });

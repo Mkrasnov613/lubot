@@ -11,7 +11,7 @@ export default function SearchBox() {
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    const q = query.trim()
+    const q = query.trim();
     if (!q) {
       abortRef.current?.abort();
       setResults([]);
@@ -21,7 +21,7 @@ export default function SearchBox() {
     }
 
     const t = setTimeout(async () => {
-      abortRef.current?.abort(); // cancel previous
+      abortRef.current?.abort();
       const ac = new AbortController();
       abortRef.current = ac;
 
@@ -29,7 +29,7 @@ export default function SearchBox() {
         setLoading(true);
         setError(null);
 
-        const base = "http://localhost:3000";
+        const base = "http://localhost:3001";
         const r = await fetch(
           `${base}/api/search?q=${encodeURIComponent(query)}`,
           {
@@ -46,9 +46,26 @@ export default function SearchBox() {
       } finally {
         setLoading(false);
       }
-    }, 300);
+    }, 150);
     return () => clearTimeout(t);
   }, [query]);
+
+  async function enqueueVideo(videoId: string) {
+    try {
+      const res = await fetch(`http://localhost:3000/api/enqueue`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          videoId,
+          requester: "web",
+        }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+    } catch (e: any) {
+      setError(e.message);
+    }
+  }
 
   return (
     <div className="space-y-3">
@@ -64,23 +81,27 @@ export default function SearchBox() {
 
       <ul className="space-y-2">
         {results.map((r) => (
-          <li key={r.id} className="flex items-start gap-3">
-            {r.thumb && (
-              <img
-                src={r.thumb}
-                alt=""
-                width={120}
-                height={68}
-                className="rounded object-cover"
-              />
-            )}
-            <div className="min-w-0">
-              <div className="font-medium truncate">{r.title}</div>
-              <div className="text-sm opacity-70">
-                {r.channel}{" "}
-                {r.durationSec ? `• ${Math.round(r.durationSec / 60)} min` : ""}
+          <li key={r.id} className="">
+            <button className="flex items-start gap-3" onClick={() => enqueueVideo(r.id)}>
+              {r.thumb && (
+                <img
+                  src={r.thumb}
+                  alt=""
+                  width={120}
+                  height={68}
+                  className="rounded object-cover"
+                />
+              )}
+              <div className="min-w-0">
+                <div className="font-medium truncate">{r.title}</div>
+                <div className="text-sm opacity-70">
+                  {r.channel}{" "}
+                  {r.durationSec
+                    ? `• ${Math.round(r.durationSec / 60)} min`
+                    : ""}
+                </div>
               </div>
-            </div>
+            </button>
           </li>
         ))}
       </ul>

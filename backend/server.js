@@ -1,71 +1,83 @@
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
-import express from 'express';
-import http from 'http';
-import { Server } from 'socket.io';
-import ytSearch from 'yt-search';
-import tmi from 'tmi.js';
-import cors from 'cors';
-import { channel } from 'diagnostics_channel';
+import express from "express";
+import http from "http";
+import { Server } from "socket.io";
+import ytSearch from "yt-search";
+import tmi from "tmi.js";
+import cors from "cors";
+import yts from "yt-search";
+import { error } from "console";
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
+const io = new Server(server, { cors: { origin: "*" } });
 
-app.use(express.static('backend/public'));
+app.use(express.static("backend/public"));
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-function must(name, pred = v => !!v) {
+function must(name, pred = (v) => !!v) {
   const v = process.env[name];
-  if (!pred(v)) { console.error(`[ENV] ${name} missing/invalid. Current value:`, v); process.exit(1); }
+  if (!pred(v)) {
+    console.error(`[ENV] ${name} missing/invalid. Current value:`, v);
+    process.exit(1);
+  }
   return v;
 }
-const BOT = must('TWITCH_BOT_NAME');
-const PASS = must('TWITCH_OAUTH_TOKEN', v => v && v.startsWith('oauth:'));
-const CHAN = must('TWITCH_CHANNEL');
+const BOT = must("TWITCH_BOT_NAME");
+const PASS = must("TWITCH_OAUTH_TOKEN", (v) => v && v.startsWith("oauth:"));
+const CHAN = must("TWITCH_CHANNEL");
 
-console.log('[AUTH] user:', BOT, 'tokenLen:', PASS.length, 'startsWithOauth:', PASS.startsWith('oauth:'));
+console.log(
+  "[AUTH] user:",
+  BOT,
+  "tokenLen:",
+  PASS.length,
+  "startsWithOauth:",
+  PASS.startsWith("oauth:")
+);
 
 const QUEUE = [];
 let nowPlaying = null;
 
-const PLAYER_SECRET = process.env.PLAYER_SECRET
+const PLAYER_SECRET = process.env.PLAYER_SECRET;
 
 const RU_LETTERS = /[ёыэъ]/i;
 const RU_DOMAINS = /(vk\.com|yandex|rutube|ok\.ru)/i;
 
-function isRussianLike(text = '') {
+function isRussianLike(text = "") {
   const lower = text.toLowerCase();
   return RU_LETTERS.test(lower);
 }
-function isDisallowedUrl(url = '') {
+function isDisallowedUrl(url = "") {
   return RU_DOMAINS.test(url.toLowerCase());
 }
-function validateTrackCandidate({ title = '', url = '' }) {
-  if (isDisallowedUrl(url)) return { ok: false, reason: 'Заборонене джерело' };
-  if (isRussianLike(title)) return { ok: false, reason: 'Заборонений виконавець/назва' };
+function validateTrackCandidate({ title = "", url = "" }) {
+  if (isDisallowedUrl(url)) return { ok: false, reason: "Заборонене джерело" };
+  if (isRussianLike(title))
+    return { ok: false, reason: "Заборонений виконавець/назва" };
   return { ok: true };
 }
 
 function assertPlayer(req, res, next) {
-  const hdr = req.headers['x-player-secret'] || req.query.key;
+  const hdr = req.headers["x-player-secret"] || req.query.key;
   if (hdr && hdr === PLAYER_SECRET) return next();
-  return res.status(401).json({ error: 'unauthorized player' });
+  return res.status(401).json({ error: "unauthorized player" });
 }
 
 async function resolveTrack(query, requester) {
   const res = await ytSearch(query);
-  const v = res?.videos?.find(x =>
-    x.videoId && x.seconds > 0 && !x.live && !x.isLive && !x.isShorts
+  const v = res?.videos?.find(
+    (x) => x.videoId && x.seconds > 0 && !x.live && !x.isLive && !x.isShorts
   );
 
   const cand = { title: v?.title, url: v?.url };
@@ -77,6 +89,8 @@ async function resolveTrack(query, requester) {
     videoId: v.videoId,
     title: v?.title,
     url: cand.url,
+    author: v.author,
+    thumb: v.thumbnail,
     requester,
     durationSec: v.seconds || 0,
   };
@@ -84,17 +98,19 @@ async function resolveTrack(query, requester) {
 
 function enqueue(track) {
   QUEUE.push(track);
-  io.emit('queue:update', { queue: QUEUE, nowPlaying });
+  io.emit("queue:update", { queue: QUEUE, nowPlaying });
 }
 function playNext() {
   nowPlaying = QUEUE.shift() || null;
-  io.emit('player:play', { track: nowPlaying });
-  io.emit('queue:update', { queue: QUEUE, nowPlaying });
+  io.emit("player:play", { track: nowPlaying });
+  io.emit("queue:update", { queue: QUEUE, nowPlaying });
 }
-function skip() { playNext(); }
+function skip() {
+  playNext();
+}
 
-io.on('connection', (socket) => {
-  socket.emit('queue:update', { queue: QUEUE, nowPlaying });
+io.on("connection", (socket) => {
+  socket.emit("queue:update", { queue: QUEUE, nowPlaying });
 });
 
 const tmiClient = new tmi.Client({
@@ -104,61 +120,69 @@ const tmiClient = new tmi.Client({
 });
 tmiClient.connect();
 
-tmiClient.on('message', async (channel, tags, message, self) => {
+tmiClient.on("message", async (channel, tags, message, self) => {
   if (self) return;
-  const isMod = tags.mod || tags['user-type'] === 'mod' || tags.badges?.broadcaster === '1';
-  const [cmd, ...rest] = message.trim().split(' ');
+  const isMod =
+    tags.mod || tags["user-type"] === "mod" || tags.badges?.broadcaster === "1";
+  const [cmd, ...rest] = message.trim().split(" ");
 
-  if (cmd === '!sr' || cmd === '!songrequest') {
-    const q = rest.join(' ').trim();
-    if (!q) return tmiClient.say(channel, `@${tags.username}, дай посилання або запит.`);
+  if (cmd === "!sr" || cmd === "!songrequest") {
+    const q = rest.join(" ").trim();
+    if (!q)
+      return tmiClient.say(
+        channel,
+        `@${tags.username}, дай посилання або запит.`
+      );
     try {
       const track = await resolveTrack(q, tags.username);
       enqueue(track);
       if (!nowPlaying) playNext();
-      tmiClient.say(channel, `Додано: ${track.title} (заявка від @${tags.username})`);
+      tmiClient.say(
+        channel,
+        `Додано: ${track.title} (заявка від @${tags.username})`
+      );
     } catch (e) {
       tmiClient.say(channel, `@${tags.username} відхилено: ${e.message}`);
     }
   }
 
-  if (cmd === '!skip' && isMod) {
+  if (cmd === "!skip" && isMod) {
     skip();
     tmiClient.say(channel, `⏭️ Пропущено. Наступний трек...`);
   }
 
-  if (cmd === '!song') {
+  if (cmd === "!song") {
     if (nowPlaying) {
-      tmiClient.say(channel, `Зараз: ${nowPlaying.title} (від @${nowPlaying.requester})`);
+      tmiClient.say(
+        channel,
+        `Зараз: ${nowPlaying.title} (від @${nowPlaying.requester})`
+      );
     } else tmiClient.say(channel, `Зараз тиша. Додай трек командою !sr`);
   }
 
-  if (cmd === '!queue') {
+  if (cmd === "!queue") {
     if (QUEUE.length === 0) tmiClient.say(channel, `Черга порожня.`);
     else tmiClient.say(channel, `У черзі ${QUEUE.length} трек(ів).`);
   }
 });
 
-// API for a website's input with Youtube search 
-app.get('/api/search', async (req, res) => {
-  const query = (req.query.q || '').trim(); //
-  if (!q) return res.json({ items: [] })   // checking if user provided a search query
+app.post("/api/enqueue", async (req, res) => {
+  try {
+    const { videoId, requester } = req.body || {};
+    const who = requester || "web";
 
-  const result = await ytSearch(query); 
-  const items = (result.videos || []).filter(v => v.videoId && !v.live && !v.isShorts).slice(0, 5).map(v => ({
-    id: v.videoId,
-    title: v.title,
-    durationSec: v.seconds,
-    thumb: v.thumbnail,
-    url: v.url,
-    channel: v.author?.name
-  }))                         // searching videos and returning the top 5 of the search 
+    const query = `https://www.youtube.com/watch?v=${videoId}`;
+    const track = await resolveTrack(query, who);
+    enqueue(track);
+    if (!nowPlaying) playNext();
+    return res.json({ track, requester });
+  } catch (error) {
+    return res.status(400).json({ error });
+  }
+});
 
-  return res.json({ items })
-})
-
-// API for a player to play next track 
-app.post('/api/next', assertPlayer, (_req, res) => {
+// API for a player to play next track
+app.post("/api/next", assertPlayer, (_req, res) => {
   playNext();
   res.json({ ok: true });
 });

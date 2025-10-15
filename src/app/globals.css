@@ -1,26 +1,45 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-dark: oklch(0.1 0.05 270);
+  --bg: oklch(0.15 0.05 270);
+  --bg-light: oklch(0.2 0.05 270);
+  --text: oklch(0.96 0.1 270);
+  --text-muted: oklch(0.76 0.1 270);
+  --highlight: oklch(0.5 0.1 270);
+  --border: oklch(0.4 0.1 270);
+  --border-muted: oklch(0.3 0.1 270);
+  --primary: oklch(0.76 0.1 270);
+  --secondary: oklch(0.76 0.1 90);
+  --danger: oklch(0.7 0.1 30);
+  --warning: oklch(0.7 0.1 100);
+  --success: oklch(0.7 0.1 160);
+  --info: oklch(0.7 0.1 260);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-bg1: var(--bg-dark);
+  --color-bg2: var(--bg);
+  --color-bg3: var(--bg-light);
+  --color-gradient: var(--gradient);
+  --color-highlight: var(--highlight);
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-border: var(--border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.gradient-bg {
+  background-color: linear-gradient(0deg, var(--bg) 95%, var(--bg-light));
+}
+
+.animate-spin-slow {
+  animation: spin 3.6s linear infinite;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg-dark);
+  color: var(--text);
   font-family: Arial, Helvetica, sans-serif;
 }

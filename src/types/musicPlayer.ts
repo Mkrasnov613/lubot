@@ -1,10 +1,10 @@
 export type Track = {
   id: string;
-  videoId: string;
   title: string;
-  url: string;
-  requester: string;
-  durationSec: number;
+  thumb: string;
+  durationSec?: number;
+  requester?: string;
+  author?: { name?: string };
 };
 
 export type QueueUpdate = {

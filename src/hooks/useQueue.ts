@@ -15,6 +15,7 @@ export function useQueue() {
     const onQueueUpdate = ({ queue, nowPlaying }: QueueUpdate) => {
       setQueue(queue);
       setNowPlaying(nowPlaying || null);
+      setIsPlaying(Boolean(nowPlaying)); 
       if (nowPlaying?.durationSec) setDuration(nowPlaying.durationSec);
     };
 
@@ -27,7 +28,13 @@ export function useQueue() {
     const onPlayerPause = () => setIsPlaying(false);
 
     // Optional progress event from server
-    const onPlayerProgress = ({ positionSec, durationSec }: { positionSec: number; durationSec?: number }) => {
+    const onPlayerProgress = ({
+      positionSec,
+      durationSec,
+    }: {
+      positionSec: number;
+      durationSec?: number;
+    }) => {
       setPosition(positionSec || 0);
       if (durationSec) setDuration(durationSec);
     };

@@ -18,8 +18,10 @@ export default function PlayerBar({
 }) {
   const playerRef = useRef<any>(null);
   const mountRef = useRef<HTMLDivElement | null>(null);
+  const readyRef = useRef<boolean>(false);
+  const pendingIdRef = useRef<string | null>(null);
 
-  // Local progress derived from iframe player
+  // Local track's progress derived from iframe player
   const [localPos, setLocalPos] = useState(0);
   const [localDur, setLocalDur] = useState(0);
   const [spinning, setSpinning] = useState(false);
@@ -45,10 +47,10 @@ export default function PlayerBar({
 
     function create() {
       if (playerRef.current || !mountRef.current) return;
+      console.log(track?.id);
       playerRef.current = new w.YT.Player(mountRef.current, {
         height: "0",
         width: "0",
-        videoId: track?.id || undefined,
         playerVars: {
           autoplay: 1,
           controls: 0,
@@ -60,11 +62,22 @@ export default function PlayerBar({
         },
         events: {
           onReady: (e: any) => {
+            readyRef.current = true;
             setLocalDur(e.target.getDuration?.() || track?.durationSec || 0);
-            if (track?.id) e.target.loadVideoById(track.id, 0, "small");
+            if (pendingIdRef.current) {
+              try {
+                e.target.cueVideoById({
+                  videoId: pendingIdRef.current,
+                  startSeconds: 0,
+                });
+                e.target.playVideo();
+              } catch {}
+              pendingIdRef.current = null;
+            }
           },
           onStateChange: (e: any) => {
             const YT = w.YT;
+            console.log("[YT] state:", e?.data);
             if (e.data === YT.PlayerState.PLAYING) {
               setSpinning(true);
             } else {
@@ -79,8 +92,16 @@ export default function PlayerBar({
               }).catch(() => {});
             }
           },
+          onError: (e: any) => {
+            // 2, 5, 100, 101, 150 are common
+            console.error("[YT] error code:", e?.data);
+          },
         },
       });
+      try {
+        const iframe = playerRef.current.getIframe?.();
+        iframe?.setAttribute?.("allow", "autoplay; encrypted-media");
+      } catch {}
     }
 
     if (w.YT && w.YT.Player) {
@@ -92,27 +113,30 @@ export default function PlayerBar({
     return () => {
       // keep player for reuse between renders
     };
-  }, [track?.id]);
+  }, []);
 
   // Load new video when track changes
   useEffect(() => {
-    const p = playerRef.current;
-    if (p && track?.id) {
+    const id = track?.id.trim();
+    if (!id) return;
+    if (playerRef.current && readyRef.current) {
       try {
-        p.loadVideoById(track.id, 0, "small");
+        playerRef.current.cueVideoById({ videoId: id, startSeconds: 0 });
+        playerRef.current.playVideo();
       } catch {}
+    } else {
+      pendingIdRef.current = id;
     }
   }, [track?.id]);
 
   // Poll progress if playing
   useEffect(() => {
-    const p = playerRef.current;
     let id: any;
     function tick() {
-      if (!p) return;
+      if (!playerRef) return;
       try {
-        const t = p.getCurrentTime?.() || 0;
-        const d = p.getDuration?.() || 0;
+        const t = playerRef.current.getCurrentTime?.() || 0;
+        const d = playerRef.current.getDuration?.() || 0;
         setLocalPos(Math.max(0, Math.floor(t)));
         setLocalDur(d);
       } catch {}
@@ -126,9 +150,16 @@ export default function PlayerBar({
     if (!p) return;
     try {
       const state = (window as any).YT?.PlayerState;
-      const s = p.getPlayerState?.();
-      if (s === state?.PLAYING) p.pauseVideo?.();
-      else p.playVideo?.();
+      const s = p.getPlayerState();
+      if (s === state?.PLAYING) p.pauseVideo();
+      else {
+        try {
+          if (p.isMuted?.()) {
+            p.unMute();
+          }
+          p.playVideo();
+        } catch {}
+      }
     } catch {}
   }
 
@@ -153,6 +184,7 @@ export default function PlayerBar({
               src={track.thumb}
               alt={track.title}
               fill
+              sizes="64"
               className="object-cover z-10"
             />
             <button
@@ -175,7 +207,9 @@ export default function PlayerBar({
           </div>
           <div className="truncate text-xs text-[var(--color-muted)]">
             {track
-              ? `${track.author?.name ?? "—"} • @${track.requester ?? ""}`
+              ? `${track.author?.name ?? "—"} • @${track.requester ?? ""} ${
+                  track.id ? track.id : "no id"
+                }`
               : "—"}
           </div>
         </div>

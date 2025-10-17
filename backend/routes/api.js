@@ -3,7 +3,7 @@ import { assertPlayer } from "../middleware/assertPlayer.js";
 import { resolveTrack, enqueue, playNext, getState } from "../lib/player.js";
 import cors from "cors";
 
-const router = Router();
+export const APIRouter = Router();
 router.use(cors());
 
 router.post("/enqueue", async (req, res) => {
@@ -28,5 +28,3 @@ router.post("/next", assertPlayer, (_req, res) => {
   playNext();
   res.json({ ok: true });
 });
-
-export default router;

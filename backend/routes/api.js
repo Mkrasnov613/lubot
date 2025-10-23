@@ -4,9 +4,9 @@ import { resolveTrack, enqueue, playNext, getState } from "../lib/player.js";
 import cors from "cors";
 
 export const APIRouter = Router();
-router.use(cors());
+APIRouter.use(cors());
 
-router.post("/enqueue", async (req, res) => {
+APIRouter.post("/enqueue", async (req, res) => {
   try {
     const { videoId, requester } = req.body || {};
     const who = requester || "web";
@@ -24,7 +24,7 @@ router.post("/enqueue", async (req, res) => {
   }
 });
 
-router.post("/next", assertPlayer, (_req, res) => {
+APIRouter.post("/next", assertPlayer, (_req, res) => {
   playNext();
   res.json({ ok: true });
 });

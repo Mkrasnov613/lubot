@@ -9,9 +9,12 @@ import http from "http";
 import { Server } from "socket.io";
 import tmi from "tmi.js";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 import { APIRouter } from "./routes/api.js";
 import { TwitchRouter } from "./routes/auth-twitch.js";
+import { DashboardRouter } from "./routes/dashboard.js";
+
 import {
   initPlayer,
   resolveTrack,
@@ -28,12 +31,15 @@ const io = new Server(server, { cors: { origin: "*" } });
 // init player with socket.io
 initPlayer(io);
 
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("backend"));
-app.use("/api", router);
+app.use(cookieParser())
+app.use("/api", APIRouter);
 app.use("/auth/twitch", TwitchRouter);
+app.use("/dashboard", DashboardRouter)
 
 function must(name, pred = (v) => !!v) {
   const v = process.env[name];

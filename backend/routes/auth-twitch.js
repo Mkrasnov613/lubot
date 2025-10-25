@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import { signSession } from "../utils/session.js";
+import db from "../db.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
@@ -31,7 +32,6 @@ TwitchRouter.get("/login", (req, res) => {
     `&state=${state}`;
 
   return res.redirect(twitchAuthUrl);
-  
 });
 
 TwitchRouter.get("/callback", async (req, res) => {
@@ -47,13 +47,11 @@ TwitchRouter.get("/callback", async (req, res) => {
   const savedState = req.cookies?.twitch_oauth_state;
 
   if (!savedState || savedState !== state) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        error: "invalid CSRF state",
-        state: savedState ?? "none",
-      });
+    return res.status(400).json({
+      success: false,
+      error: "invalid CSRF state",
+      state: savedState ?? "none",
+    });
   }
 
   res.clearCookie("twitch_oauth_state");
@@ -79,8 +77,6 @@ TwitchRouter.get("/callback", async (req, res) => {
     const { access_token, refresh_token, expires_in, token_type } =
       response.data;
 
-    console.log("Tokens recieved: ", { access_token, refresh_token });
-
     const userResponse = await axios.get("https://api.twitch.tv/helix/users", {
       headers: {
         Authorization: `Bearer ${access_token}`,
@@ -89,7 +85,61 @@ TwitchRouter.get("/callback", async (req, res) => {
     });
 
     const user = userResponse.data.data[0];
-    console.log("User info: ", user);
+    
+    // Save user info
+    db.prepare(
+      `
+  INSERT INTO users (twitch_user_id, login, display_name, avatar_url)
+  VALUES (@id, @login, @display_name, @avatar_url)
+  ON CONFLICT(twitch_user_id) DO UPDATE SET
+    login = excluded.login,
+    display_name = excluded.display_name,
+    avatar_url = excluded.avatar_url;
+`
+    ).run({
+      id: user.id,
+      login: user.login,
+      display_name: user.display_name,
+      avatar_url: user.profile_image_url ?? null,
+    });
+
+    // Save tokens
+    const expiresAt = new Date(Date.now() + expires_in * 1000).toISOString();
+
+    db.prepare(
+      `
+  INSERT INTO twitch_tokens (tenant_id, access_token, refresh_token, access_expires_at, scope)
+  VALUES (@id, @access_token, @refresh_token, @access_expires_at, @scope)
+  ON CONFLICT(tenant_id) DO UPDATE SET
+    access_token = excluded.access_token,
+    refresh_token = excluded.refresh_token,
+    access_expires_at = excluded.access_expires_at,
+    scope = excluded.scope;
+`
+    ).run({
+      id: user.id,
+      access_token,
+      refresh_token,
+      access_expires_at: expiresAt,
+      scope: "", // add your scopes later if needed
+    });
+
+    // Save tenant (streamer)
+    db.prepare(
+      `
+  INSERT INTO tenants (twitch_user_id, slug, display_name, avatar_url)
+  VALUES (@id, @slug, @display_name, @avatar_url)
+  ON CONFLICT(twitch_user_id) DO UPDATE SET
+    slug = excluded.slug,
+    display_name = excluded.display_name,
+    avatar_url = excluded.avatar_url;
+`
+    ).run({
+      id: user.id,
+      slug: user.login,
+      display_name: user.display_name,
+      avatar_url: user.profile_image_url ?? null,
+    });
 
     const session = signSession({ uid: user.id, login: user.login });
 

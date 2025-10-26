@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import ytSearch from "yt-search";
+import { ytSearch } from "yt-search";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);

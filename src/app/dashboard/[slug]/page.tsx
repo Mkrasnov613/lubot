@@ -17,7 +17,7 @@ export default function DashboardPage({ params }: DashboardPageProps) {
       </div>
 
       <Link
-        href="/auth/twitch/bot-login"
+        href="http://localhost:3000/auth/twitch/bot-login"
         className="inline-flex w-fit items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-bg3)] px-4 py-2 text-sm font-medium hover:bg-[var(--color-bg2)]"
       >
         Connect Bot

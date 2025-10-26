@@ -5,6 +5,48 @@ import { useMemo, useRef, useState, useEffect } from "react";
 import { formatTime } from "@/lib/utils";
 import Image from "next/image";
 
+type YouTubePlayer = {
+  getIframe?: () => HTMLIFrameElement | null;
+  cueVideoById: (options: { videoId: string; startSeconds?: number }) => void;
+  playVideo: () => void;
+  pauseVideo: () => void;
+  getPlayerState: () => number;
+  isMuted?: () => boolean;
+  unMute?: () => void;
+  getCurrentTime?: () => number;
+  getDuration?: () => number;
+};
+
+type YouTubePlayerEvent = {
+  data?: number;
+  target: YouTubePlayer;
+};
+
+type YouTubeNamespace = {
+  Player: new (
+    element: HTMLElement | string,
+    options: {
+      height?: string;
+      width?: string;
+      playerVars?: Record<string, unknown>;
+      events?: {
+        onReady?: (event: YouTubePlayerEvent) => void;
+        onStateChange?: (event: YouTubePlayerEvent) => void;
+        onError?: (event: { data?: number }) => void;
+      };
+    }
+  ) => YouTubePlayer;
+  PlayerState: {
+    ENDED: number;
+    PLAYING: number;
+  };
+};
+
+type YouTubeWindow = Window & {
+  YT?: YouTubeNamespace;
+  onYouTubeIframeAPIReady?: () => void;
+};
+
 export default function PlayerBar({
   track,
   isPlaying,
@@ -16,7 +58,7 @@ export default function PlayerBar({
   positionSec: number;
   durationSec: number;
 }) {
-  const playerRef = useRef<any>(null);
+  const playerRef = useRef<YouTubePlayer | null>(null);
   const mountRef = useRef<HTMLDivElement | null>(null);
   const readyRef = useRef<boolean>(false);
   const pendingIdRef = useRef<string | null>(null);
@@ -34,7 +76,7 @@ export default function PlayerBar({
   }, [localPos, localDur, positionSec, durationSec, track?.durationSec]);
 
   useEffect(() => {
-    const w = window as any;
+    const w = window as YouTubeWindow;
     if (w.YT && w.YT.Player) return;
     const tag = document.createElement("script");
     tag.src = "https://www.youtube.com/iframe_api";
@@ -42,12 +84,12 @@ export default function PlayerBar({
   }, []);
 
   useEffect(() => {
-    const w = window as any;
+    const w = window as YouTubeWindow;
     if (!mountRef.current) return;
 
     function create() {
       if (playerRef.current || !mountRef.current) return;
-      console.log(track?.id);
+      if (!w.YT) return;
       playerRef.current = new w.YT.Player(mountRef.current, {
         height: "0",
         width: "0",
@@ -61,7 +103,7 @@ export default function PlayerBar({
             typeof window !== "undefined" ? window.location.origin : undefined,
         },
         events: {
-          onReady: (e: any) => {
+          onReady: (e) => {
             readyRef.current = true;
             setLocalDur(e.target.getDuration?.() || track?.durationSec || 0);
             if (pendingIdRef.current) {
@@ -71,12 +113,15 @@ export default function PlayerBar({
                   startSeconds: 0,
                 });
                 e.target.playVideo();
-              } catch {}
+              } catch {
+                // ignore cue errors and wait for the next attempt
+              }
               pendingIdRef.current = null;
             }
           },
-          onStateChange: (e: any) => {
+          onStateChange: (e) => {
             const YT = w.YT;
+            if (!YT) return;
             console.log("[YT] state:", e?.data);
             if (e.data === YT.PlayerState.PLAYING) {
               setSpinning(true);
@@ -84,7 +129,7 @@ export default function PlayerBar({
               setSpinning(false);
             }
             if (e.data === YT.PlayerState.ENDED) {
-              fetch("http://localhost:3000/api/next", {
+              fetch("/api/next", {
                 method: "POST",
                 headers: {
                   "x-player-secret": "lutikmojlubimyj",
@@ -92,7 +137,7 @@ export default function PlayerBar({
               }).catch(() => {});
             }
           },
-          onError: (e: any) => {
+          onError: (e) => {
             // 2, 5, 100, 101, 150 are common
             console.error("[YT] error code:", e?.data);
           },
@@ -107,13 +152,13 @@ export default function PlayerBar({
     if (w.YT && w.YT.Player) {
       create();
     } else {
-      (window as any).onYouTubeIframeAPIReady = () => create();
+      (window as YouTubeWindow).onYouTubeIframeAPIReady = () => create();
     }
 
     return () => {
       // keep player for reuse between renders
     };
-  }, []);
+  }, [track?.durationSec, track?.id]);
 
   // Load new video when track changes
   useEffect(() => {
@@ -123,7 +168,9 @@ export default function PlayerBar({
       try {
         playerRef.current.cueVideoById({ videoId: id, startSeconds: 0 });
         playerRef.current.playVideo();
-      } catch {}
+      } catch {
+        // ignore errors triggered by player reloads
+      }
     } else {
       pendingIdRef.current = id;
     }
@@ -132,45 +179,69 @@ export default function PlayerBar({
   // Poll progress if playing
   useEffect(() => {
     function tick() {
-      if (!playerRef) return;
+      if (!playerRef.current) return;
       try {
-        const t = playerRef.current.getCurrentTime?.() || 0;
-        const d = playerRef.current.getDuration?.() || 0;
+        const t = playerRef.current?.getCurrentTime?.() || 0;
+        const d = playerRef.current?.getDuration?.() || 0;
         setLocalPos(Math.max(0, Math.floor(t)));
         setLocalDur(d);
-      } catch {}
+      } catch {
+        // ignore polling errors and continue scheduling updates
+      }
     }
     const intervalId = setInterval(tick, 1000);
     return () => clearInterval(intervalId);
   }, []);
 
+  useEffect(() => {
+    if (!playerRef.current || !readyRef.current) return;
+    try {
+      if (isPlaying) {
+        if (playerRef.current.isMuted?.()) {
+          playerRef.current.unMute?.();
+        }
+        playerRef.current.playVideo();
+      } else {
+        playerRef.current.pauseVideo();
+      }
+    } catch {
+      // ignore sync errors when controlling playback from props
+    }
+  }, [isPlaying]);
+
   function togglePlay() {
     const p = playerRef.current;
     if (!p) return;
     try {
-      const state = (window as any).YT?.PlayerState;
+      const state = (window as YouTubeWindow).YT?.PlayerState;
       const s = p.getPlayerState();
       if (s === state?.PLAYING) p.pauseVideo();
       else {
         try {
           if (p.isMuted?.()) {
-            p.unMute();
+            p.unMute?.();
           }
           p.playVideo();
-        } catch {}
+        } catch {
+          // ignore transient play errors
+        }
       }
-    } catch {}
+    } catch {
+      // player state cannot be read
+    }
   }
 
   async function nextTrack() {
     try {
-      await fetch("http://localhost:3000/api/next", {
+      await fetch("/api/next", {
         method: "POST",
         headers: {
           "x-player-secret": "lutikmojlubimyj",
         },
       });
-    } catch (e) {}
+    } catch {
+      // ignore network errors when advancing the track
+    }
   }
 
   return (

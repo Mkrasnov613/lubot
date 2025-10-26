@@ -32,10 +32,12 @@ export default function SearchOverlay({ onClose }: { onClose?: () => void }) {
         const r = await fetch(`/api/search?q=${query}`, {
           signal: ac.signal,
         });
-        const data = await r.json();
+        const data: { items?: SearchItem[] } = await r.json();
         setResults(data.items || []);
-      } catch (e: any) {
-        if (e?.name !== "AbortError") setError("Пошук не вдався");
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name !== "AbortError") {
+          setError("Пошук не вдався");
+        }
         setResults([]);
       } finally {
         setLoading(false);
@@ -47,16 +49,20 @@ export default function SearchOverlay({ onClose }: { onClose?: () => void }) {
 
   async function enqueueVideo(videoId: string) {
     try {
-      const res = await fetch(`http://localhost:3000/api/enqueue`, {
+      const res = await fetch(`/api/enqueue`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ videoId, requester: "web" }),
       });
-      const data = await res.json();
+      const data: { error?: string } = await res.json();
       if (data?.error) throw new Error(data.error);
       onClose?.();
-    } catch (e: any) {
-      setError(e.message || "Не вдалося додати трек");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "Не вдалося додати трек");
+      } else {
+        setError("Не вдалося додати трек");
+      }
     }
   }
 

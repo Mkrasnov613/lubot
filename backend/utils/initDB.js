@@ -1,6 +1,5 @@
 import db from "../db.js";
 
-// Create all tables if they don't exist
 export function initDB() {
   const schema = `
   CREATE TABLE IF NOT EXISTS users (
@@ -16,6 +15,17 @@ export function initDB() {
     slug TEXT UNIQUE,
     display_name TEXT,
     avatar_url TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS tenant_bot (
+    tenant_id TEXT PRIMARY KEY,
+    bot_login TEXT,
+    bot_display_name TEXT,
+    access_token TEXT,
+    refresh_token TEXT,
+    access_expires_at DATETIME,
+    scope TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 

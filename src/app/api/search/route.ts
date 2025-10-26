@@ -7,11 +7,11 @@ export async function GET(req: Request) {
 
   if (!q) return NextResponse.json({ items: [] });
   const result = await ytSearch(q);
-  
+
   const items = (result.videos || [])
-    .filter((v) => v.videoId && !v.live && !v.isShorts)
+    .filter((v: any) => v.videoId && !v.live && !v.isShorts)
     .slice(0, 5)
-    .map((v) => ({
+    .map((v: any) => ({
       id: v.videoId,
       title: v.title,
       durationSec: v.seconds,

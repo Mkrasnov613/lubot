@@ -131,7 +131,6 @@ export default function PlayerBar({
 
   // Poll progress if playing
   useEffect(() => {
-    let id: any;
     function tick() {
       if (!playerRef) return;
       try {
@@ -141,8 +140,8 @@ export default function PlayerBar({
         setLocalDur(d);
       } catch {}
     }
-    id = setInterval(tick, 1000);
-    return () => clearInterval(id);
+    const intervalId = setInterval(tick, 1000);
+    return () => clearInterval(intervalId);
   }, []);
 
   function togglePlay() {

@@ -24,7 +24,7 @@ export async function refreshTokenRow(tenantId, clientId, clientSecret, table) {
   const res = await axios.post(
     "https://id.twitch.tv/oauth2/token",
     body.toString(),
-    { headers: { "Content-Type": "application/x-www-form-urlencoded" }, timeout: 10000 }
+    { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
   );
 
   const { access_token, refresh_token, expires_in, scope } = res.data;

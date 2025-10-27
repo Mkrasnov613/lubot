@@ -11,16 +11,8 @@ import { APIRouter } from "./routes/api.js";
 import { TwitchRouter } from "./routes/auth-twitch.js";
 import { DashboardRouter } from "./routes/dashboard.js";
 
-import {
-  initPlayer,
-  resolveTrack,
-  enqueue,
-  playNext,
-  getState,
-  skip,
-} from "./lib/player.js";
+import { initPlayer, getState } from "./lib/player.js";
 
-import { initBot } from "./utils/initBot.js";
 import { startTokenScheduler } from "./utils/tokenScheduler.js";
 import { initDB } from "./utils/initDB.js";
 
@@ -28,14 +20,15 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-
-initDB()
+initDB();
 initPlayer(io);
 
-app.use(cors({
-  origin: "http://localhost:3001",
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: ["http://localhost:3001", process.env.FRONTEND_BASE_URL],
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("backend"));
@@ -49,8 +42,11 @@ io.on("connection", (socket) => {
   socket.emit("queue:update", { queue: QUEUE, nowPlaying });
 });
 
-const stopScheduler = startTokenScheduler()
-process.on("SIGINT", () => {stopScheduler(); process.exit(0)})
+const stopScheduler = startTokenScheduler();
+process.on("SIGINT", () => {
+  stopScheduler();
+  process.exit(0);
+});
 
 const PORT = 3000;
 server.listen(PORT, () => console.log(`http://localhost:${PORT}`));

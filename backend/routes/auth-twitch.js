@@ -4,18 +4,25 @@ import { signSession, verifySession } from "../utils/session.js";
 import db from "../db.js";
 import { initBot } from "../utils/initBot.js";
 
+const frontendBaseUrl = (
+  process.env.FRONTEND_BASE_URL ?? "https://twitch-website-bot.vercel.app"
+).replace(/\/+$/, "");
+const TWITCH_CLIENT_ID = (process.env.TWITCH_CLIENT_ID || "").trim();
+const TWITCH_CLIENT_SECRET = (process.env.TWITCH_CLIENT_SECRET || "").trim();
+const TWITCH_REDIRECT_URI = (process.env.TWITCH_REDIRECT_URI || "").trim();
+
 export const TwitchRouter = Router();
 
 TwitchRouter.get("/login", (req, res) => {
-  const clientId = process.env.TWITCH_CLIENT_ID;
-  const redirectUri = process.env.TWITCH_REDIRECT_URI;
+  const clientId = TWITCH_CLIENT_ID;
+  const redirectUri = TWITCH_REDIRECT_URI;
   const scope = process.env.TWITCH_SCOPE ?? "";
   const state = Math.random().toString(36).slice(2);
 
   res.cookie("twitch_oauth_state", state, {
     httpOnly: true,
     sameSite: "lax",
-    secure: true,
+    secure: false,
     maxAge: 10 * 60 * 1000,
   });
 
@@ -31,8 +38,8 @@ TwitchRouter.get("/login", (req, res) => {
 });
 
 TwitchRouter.get("/callback", async (req, res) => {
-  const code = req.query.code;
-  const state = req.query.state;
+  const code = String(req.query.code || "");
+  const state = String(req.query.state || "");
 
   if (!code || !state) {
     return res
@@ -46,7 +53,6 @@ TwitchRouter.get("/callback", async (req, res) => {
     return res.status(400).json({
       success: false,
       error: "invalid CSRF state",
-      state: savedState ?? "none",
     });
   }
 
@@ -55,7 +61,7 @@ TwitchRouter.get("/callback", async (req, res) => {
   const body = new URLSearchParams({
     client_id: process.env.TWITCH_CLIENT_ID,
     client_secret: process.env.TWITCH_CLIENT_SECRET,
-    code,
+    code: code,
     grant_type: "authorization_code",
     redirect_uri: process.env.TWITCH_REDIRECT_URI,
   });
@@ -66,10 +72,8 @@ TwitchRouter.get("/callback", async (req, res) => {
       body.toString(),
       {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        timeout: 10_000,
       }
     );
-
     const { access_token, refresh_token, expires_in, token_type } =
       response.data;
 
@@ -147,116 +151,10 @@ TwitchRouter.get("/callback", async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.redirect(`https://twitch-website-bot.vercel.app/dashboard/${user.login}`);
+
+    return res.redirect(`${frontendBaseUrl}/dashboard/${user.login}`);
   } catch (error) {
-    console.error(
-      "Twitch OAuth error: ",
-      error.response?.data || error.message
-    );
-  }
-});
-
-TwitchRouter.get("/bot-login", (req, res) => {
-  const sid = req.cookies?.sid;
-  if (!sid) return res.status(401).json({ error: "not authenticated" });
-
-  let session;
-  try {
-    session = verifySession(sid);
-  } catch {
-    return res.status(401).json({ error: "invalid session" });
-  }
-
-  const tenantId = session.uid; // streamer’s twitch_user_id
-
-  const clientId = process.env.TWITCH_CLIENT_ID;
-  const redirectUri = process.env.TWITCH_BOT_REDIRECT_URI;
-  const scope = "chat:read chat:edit";
-  const state = Math.random().toString(36).slice(2);
-
-  // CSRF + remember tenant
-  res.cookie("bot_oauth_state", state, {
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge: 10 * 60 * 1000,
-  });
-  res.cookie("bot_tenant_id", tenantId, {
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge: 10 * 60 * 1000,
-  });
-
-  const twitchAuthUrl =
-    `https://id.twitch.tv/oauth2/authorize` +
-    `?client_id=${clientId}` +
-    `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-    `&response_type=code` +
-    `&scope=${encodeURIComponent(scope)}` +
-    `&state=${state}`;
-
-  return res.redirect(twitchAuthUrl);
-});
-
-TwitchRouter.get("/bot-callback", async (req, res) => {
-  const code = req.query.code;
-  const state = req.query.state;
-  const savedState = req.cookies?.bot_oauth_state;
-  const tenantId = req.cookies?.bot_tenant_id;
-
-  if (!code || !savedState || savedState !== state || !tenantId) {
-    return res.status(400).json({ error: "invalid state/tenant" });
-  }
-
-  res.clearCookie("bot_oauth_state");
-  res.clearCookie("bot_tenant_id");
-
-  const body = new URLSearchParams({
-    client_id: process.env.TWITCH_CLIENT_ID,          
-    client_secret: process.env.TWITCH_CLIENT_SECRET,
-    code,
-    grant_type: "authorization_code",
-    redirect_uri: process.env.TWITCH_BOT_REDIRECT_URI,
-  });
-
-  const tokenResponse = await axios.post(
-    "https://id.twitch.tv/oauth2/token",
-    body.toString(),
-    { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-  );
-
-  const { access_token, refresh_token, expires_in } = tokenResponse.data;
-
-  const botUser = await axios.get("https://api.twitch.tv/helix/users", {
-    headers: {
-      Authorization: `Bearer ${access_token}`,
-      "Client-Id": process.env.TWITCH_CLIENT_ID,
-    },
-  });
-
-  const info = botUser.data.data[0];
-  const expiresAt = new Date(Date.now() + expires_in * 1000).toISOString();
-
-  db.prepare(`
-    INSERT INTO tenant_bot (tenant_id, bot_login, bot_display_name, access_token, refresh_token, access_expires_at, scope)
-    VALUES (@tenant_id, @bot_login, @bot_display_name, @access_token, @refresh_token, @access_expires_at, @scope)
-    ON CONFLICT(tenant_id) DO UPDATE SET
-      bot_login = excluded.bot_login,
-      bot_display_name = excluded.bot_display_name,
-      access_token = excluded.access_token,
-      refresh_token = excluded.refresh_token,
-      access_expires_at = excluded.access_expires_at,
-      scope = excluded.scope;
-  `).run({
-    tenant_id: tenantId,
-    bot_login: info.login,
-    bot_display_name: info.display_name,
-    access_token,
-    refresh_token,
-    access_expires_at: expiresAt,
-    scope: "chat:read chat:edit",
-  });
-
-  await initBot(tenantId);
-
-  return res.redirect(`https://twitch-website-bot.vercel.app/dashboard/${info.display_name}`);
+    const msg = error.response?.data?.message || error.message || "unknown";
+    return res.status(400).send("OAuth failed: " + msg);
+  } 
 });

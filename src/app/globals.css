@@ -24,14 +24,20 @@
   --color-gradient: var(--gradient);
   --color-highlight: var(--highlight);
   --color-text: var(--text);
+  --color-twitch: #9146ff;
   --color-muted: var(--text-muted);
   --color-border: var(--border);
+  --color-success: var(--success);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 .gradient-bg {
   background-color: linear-gradient(0deg, var(--bg) 95%, var(--bg-light));
+}
+
+.shadow-large {
+  box-shadow: 0px 4px 4px #00000030, 0px 12px 12px #00000015;
 }
 
 .animate-spin-slow {

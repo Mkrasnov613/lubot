@@ -1,7 +1,7 @@
 import db from "../db.js";
 import { refreshTokenRow, isExpiredOrSoon } from "../lib/twitch-tokens.js";
 
-const TABLES = ["twitch_tokens", "tenant_bot"]; 
+const TABLES = ["twitch_tokens"]; 
 
 export function startTokenScheduler({
   intervalMs = 10 * 60 * 1000, // every 10 min

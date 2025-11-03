@@ -1,10 +1,8 @@
 import { Router } from "express";
-import { assertPlayer } from "../middleware/assertPlayer.js";
-import { resolveTrack, enqueue, playNext, getState } from "../lib/player.js";
-import cors from "cors";
+import { assertPlayer } from "../../middleware/assertPlayer.js";
+import { resolveTrack, enqueue, playNext, getState } from "../../lib/player.js";
 
 export const APIRouter = Router();
-APIRouter.use(cors());
 
 APIRouter.post("/enqueue", async (req, res) => {
   try {

@@ -7,35 +7,55 @@ import { Server } from "socket.io";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
-import { APIRouter } from "./routes/api.js";
-import { TwitchRouter } from "./routes/auth-twitch.js";
-import { DashboardRouter } from "./routes/dashboard.js";
+import { APIRouter } from "./routes/api/player.js";
+import { dataTenantRouter } from "./routes/api/data-tenant.js";
+import { TwitchAuthRouter } from "./routes/auth-twitch.js";
 
 import { initPlayer, getState } from "./lib/player.js";
 
 import { startTokenScheduler } from "./utils/tokenScheduler.js";
 import { initDB } from "./utils/initDB.js";
+import { TwitchRouter } from "./routes/api/twitch.js";
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+
+const allowedOrigins = [
+  "http://localhost:3001",
+  process.env.FRONTEND_BASE_URL,
+].filter(Boolean);
+
+const corsOptions = {
+  credentials: true,
+  origin(origin, cb) {
+    // allow same-origin/no-origin (SSR, curl) and explicit allowed origins
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error(`Not allowed by CORS: ${origin}`));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
 
 initDB();
+
+app.use(cors(corsOptions));
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3001",
+    credentials: true,
+  },
+});
+
 initPlayer(io);
 
-app.use(
-  cors({
-    origin: ["http://localhost:3001", process.env.FRONTEND_BASE_URL],
-    credentials: true,
-  })
-);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("backend"));
 app.use(cookieParser());
+app.use("/api/twitch", TwitchRouter)
 app.use("/api", APIRouter);
-app.use("/auth/twitch", TwitchRouter);
-app.use("/dashboard", DashboardRouter);
+app.use("/api/data", dataTenantRouter);
+app.use("/auth/twitch", TwitchAuthRouter);
 
 io.on("connection", (socket) => {
   const { QUEUE, nowPlaying } = getState();

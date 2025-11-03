@@ -11,12 +11,12 @@ const TWITCH_CLIENT_ID = (process.env.TWITCH_CLIENT_ID || "").trim();
 const TWITCH_CLIENT_SECRET = (process.env.TWITCH_CLIENT_SECRET || "").trim();
 const TWITCH_REDIRECT_URI = (process.env.TWITCH_REDIRECT_URI || "").trim();
 
-export const TwitchRouter = Router();
+export const TwitchAuthRouter = Router();
 
-TwitchRouter.get("/login", (req, res) => {
+TwitchAuthRouter.get("/login", (req, res) => {
   const clientId = TWITCH_CLIENT_ID;
   const redirectUri = TWITCH_REDIRECT_URI;
-  const scope = process.env.TWITCH_SCOPE ?? "";
+  const scope = process.env.TWITCH_SCOPE ?? "channel:manage:broadcast";
   const state = Math.random().toString(36).slice(2);
 
   res.cookie("twitch_oauth_state", state, {
@@ -37,7 +37,7 @@ TwitchRouter.get("/login", (req, res) => {
   return res.redirect(twitchAuthUrl);
 });
 
-TwitchRouter.get("/callback", async (req, res) => {
+TwitchAuthRouter.get("/callback", async (req, res) => {
   const code = String(req.query.code || "");
   const state = String(req.query.state || "");
 
@@ -141,20 +141,19 @@ TwitchRouter.get("/callback", async (req, res) => {
       avatar_url: user.profile_image_url ?? null,
     });
 
-    const session = signSession({ uid: user.id, login: user.login });
+    const session = signSession({ sid: user.id, login: user.login });
 
     res.cookie("sid", session, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
       path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-
-    return res.redirect(`${frontendBaseUrl}/dashboard/${user.login}`);
+    return res.redirect(`${frontendBaseUrl}/${user.login}/dashboard`);
   } catch (error) {
     const msg = error.response?.data?.message || error.message || "unknown";
     return res.status(400).send("OAuth failed: " + msg);
-  } 
+  }
 });

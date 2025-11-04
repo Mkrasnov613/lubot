@@ -1,11 +1,5 @@
 import SideNav from "@/components/SideNav";
-export default function DashboardLayout({
-  children,
-  params,
-}: {
-  children: React.ReactNode;
-  params: { slug: string };
-}) {
+export default function Layout({ children }: LayoutProps<"/[slug]">) {
   return (
     <div className="flex justify-between">
       <SideNav />

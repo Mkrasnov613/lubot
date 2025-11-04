@@ -32,22 +32,34 @@ export default async function TwitchChannelComponent({
 
   async function updateStream(formData: FormData) {
     "use server";
+
     const title = formData.get("title")?.toString() ?? "";
     const gameId = formData.get("gameId")?.toString() ?? channel.game_id;
 
     const cookieHeaderInner = (await cookies()).toString();
 
-    await fetch("http://localhost:3000/api/twitch/channel/update", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        cookie: cookieHeaderInner,
-      },
-      body: JSON.stringify({ title, gameId }),
-      cache: "no-cache",
-    });
+    try {
+      const res = await fetch(
+        "http://localhost:3000/api/twitch/channel/update",
+        {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            cookie: cookieHeaderInner,
+          },
+          body: JSON.stringify({ title, gameId }),
+          cache: "no-cache",
+        }
+      );
 
-    revalidatePath(`/dashboard/${slug}`);
+      const json = await res.json();
+
+      return { ok: true as const, message: json.message || "Updated" };
+    } catch (e: any) {
+      return { ok: false as const, message: e?.message || "Network error" };
+    } finally {
+      revalidatePath(`/dashboard/${slug}`);
+    }
   }
 
   return (

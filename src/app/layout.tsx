@@ -1,4 +1,5 @@
 import "./globals.css";
+import { Toaster } from "sonner";
 
 export default function RootLayout({
   children,
@@ -11,6 +12,7 @@ export default function RootLayout({
         className={`antialiased text-white`}
       >
         {children}
+        <Toaster />
       </body>
     </html>
   );

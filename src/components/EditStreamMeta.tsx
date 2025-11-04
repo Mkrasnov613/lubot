@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { showToast } from "@/lib/toast";
 
 type Props = {
   initialTitle: string;
   initialGame: string;
-  updateStream: (formData: FormData) => Promise<void>; // server action
+  updateStream: any // server action
 };
 
 type GameItem = { id: string; name: string; boxArtUrl?: string };
@@ -107,16 +108,23 @@ export default function EditStreamMeta({
   }
 
   function onSubmit(formData: FormData) {
-    startTransition(async () => {
-      // Ensure both fields are included
-      formData.set("title", title);
-      formData.set("game", gameName);
-      if (gameId) formData.set("gameId", gameId);
+  startTransition(async () => {
+    formData.set("title", title);
+    formData.set("game", gameName);
+    if (gameId) formData.set("gameId", gameId);
 
-      await updateStream(formData);
+    const result = await updateStream(formData);
+
+    if (result.ok) {
+      showToast("success", "The stream's info was successfully updated");
       setEditing(false);
-    });
-  }
+    } else {
+      showToast("error", `Failed to update stream: ${result?.message}`);
+      // keep editing open for correction
+    }
+  });
+}
+
 
   if (!editing) {
     return (
@@ -157,7 +165,7 @@ export default function EditStreamMeta({
             setGameName(e.target.value);
             setGameId(null); // reset if user starts typing
             setOpen(true);
-            setIsSelected(false)
+            setIsSelected(false);
           }}
           onKeyDown={onKeyDown}
           autoComplete="off"

@@ -11,7 +11,7 @@
   --border-muted: oklch(0.3 0.11 305);
   --primary: oklch(0.76 0.11 305);
   --secondary: oklch(0.76 0.11 125);
-  --danger: oklch(0.7 0.11 30);
+  --error: oklch(0.7 0.11 30);
   --warning: oklch(0.7 0.11 100);
   --success: oklch(0.7 0.11 160);
   --info: oklch(0.7 0.11 260);
@@ -28,8 +28,13 @@
   --color-muted: var(--text-muted);
   --color-border: var(--border);
   --color-success: var(--success);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+}
+
+.toast-style {
+  background-color: var(--success);
+  border-radius: 25px;
 }
 
 .gradient-bg {

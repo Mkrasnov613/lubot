@@ -49,7 +49,7 @@ export default function SearchOverlay({ onClose }: { onClose?: () => void }) {
 
   async function enqueueVideo(videoId: string) {
     try {
-      const res = await fetch(`/api/enqueue`, {
+      const res = await fetch(`http://localhost:3000/api/player/enqueue`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ videoId, requester: "web" }),
@@ -59,7 +59,7 @@ export default function SearchOverlay({ onClose }: { onClose?: () => void }) {
       onClose?.();
     } catch (err: unknown) {
       if (err instanceof Error) {
-        setError(err.message || "Не вдалося додати трек");
+        setError(err.message);
       } else {
         setError("Не вдалося додати трек");
       }

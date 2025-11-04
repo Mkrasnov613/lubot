@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { ytSearch } from "yt-search";
 import type { SearchItem } from "@/types/SearchItem";
 
 type YtSearchVideo = {
@@ -28,6 +27,7 @@ const isYtSearchVideo = (value: unknown): value is Required<
     typeof candidate.url === "string"
   );
 };
+const ytSearch = ((await import("yt-search")).default as unknown) as (q: string) => Promise<unknown>;
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);

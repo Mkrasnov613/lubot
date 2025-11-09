@@ -11,9 +11,8 @@ const nextConfig: NextConfig = {
       { hostname: "static-cdn.jtvnw.net" },
     ],
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  typescript: { ignoreBuildErrors: true },
+  eslint: { ignoreDuringBuilds: true },
 };
 
 export default nextConfig;

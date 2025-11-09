@@ -7,7 +7,7 @@ import { showToast } from "@/lib/toast";
 type Props = {
   initialTitle: string;
   initialGame: string;
-  updateStream: any // server action
+  updateStream: any; // server action
 };
 
 type GameItem = { id: string; name: string; boxArtUrl?: string };
@@ -108,23 +108,29 @@ export default function EditStreamMeta({
   }
 
   function onSubmit(formData: FormData) {
-  startTransition(async () => {
-    formData.set("title", title);
-    formData.set("game", gameName);
-    if (gameId) formData.set("gameId", gameId);
+    startTransition(async () => {
+      formData.set("title", title);
+      formData.set("game", gameName);
+      if (gameId) formData.set("gameId", gameId);
 
-    const result = await updateStream(formData);
+      const result = await updateStream(formData);
 
-    if (result.ok) {
-      showToast("success", "The stream's info was successfully updated");
-      setEditing(false);
-    } else {
-      showToast("error", `Failed to update stream: ${result?.message}`);
-      // keep editing open for correction
-    }
-  });
-}
-
+      if (result.ok) {
+        showToast({
+          status: "success",
+          title: "The stream's info was successfully updated",
+          description: `${title} — ${gameName} `
+        });
+        setEditing(false);
+      } else {
+        showToast({
+          status: "error",
+          title: `Failed to update stream: ${result?.message}`,
+        });
+        // keep editing open for correction
+      }
+    });
+  }
 
   if (!editing) {
     return (

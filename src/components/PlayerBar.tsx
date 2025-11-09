@@ -1,6 +1,7 @@
 "use client";
 
 import type { Track } from "@/types/musicPlayer";
+import { showToast } from "@/lib/toast";
 import { useMemo, useRef, useState, useEffect } from "react";
 import { formatTime } from "@/lib/utils";
 import Image from "next/image";

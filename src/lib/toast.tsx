@@ -1,4 +1,4 @@
-import "../app/globals.css"
+import "../app/globals.css";
 import { toast } from "sonner";
 
 type ToastStatus = "success" | "error" | "warning";
@@ -9,10 +9,19 @@ const toastColors: Record<ToastStatus, string> = {
   warning: "oklch(0.7 0.11 100)",
 };
 
-export function showToast(status: ToastStatus, text: string): void {
-  toast(text, {
+export function showToast({
+  status,
+  title,
+  description,
+}: {
+  status: ToastStatus;
+  title: string;
+  description?: string;
+}): void {
+  toast(title, {
     className: `w-52 min-h-10 rounded-md shadow-md`,
-    style: {background: toastColors[status], border: "0px"},
+    description,
+    style: { background: toastColors[status], border: "0px" },
     duration: 5000,
   });
 }

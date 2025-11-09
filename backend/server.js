@@ -28,7 +28,6 @@ const allowedOrigins = [
 const corsOptions = {
   credentials: true,
   origin(origin, cb) {
-    // allow same-origin/no-origin (SSR, curl) and explicit allowed origins
     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
     return cb(new Error(`Not allowed by CORS: ${origin}`));
   },
@@ -39,7 +38,7 @@ const corsOptions = {
 initDB();
 
 app.use(cors(corsOptions));
-const io = new Server(server, {
+export const io = new Server(server, {
   cors: {
     origin: "http://localhost:3001",
     credentials: true,
@@ -53,13 +52,17 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("backend"));
 app.use(cookieParser());
 app.use("/api/twitch", TwitchRouter)
-app.use("/api", APIRouter);
+app.use("/api/player", APIRouter);
 app.use("/api/data", dataTenantRouter);
 app.use("/auth/twitch", TwitchAuthRouter);
 
 io.on("connection", (socket) => {
   const { QUEUE, nowPlaying } = getState();
   socket.emit("queue:update", { queue: QUEUE, nowPlaying });
+});
+
+io.of("/eventsub").on("connection", (socket) => {
+  console.log("EventSub UI client connected", socket.id);
 });
 
 const stopScheduler = startTokenScheduler();

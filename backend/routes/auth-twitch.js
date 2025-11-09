@@ -2,7 +2,8 @@ import { Router } from "express";
 import axios from "axios";
 import { signSession, verifySession } from "../utils/session.js";
 import db from "../db.js";
-import { initBot } from "../utils/initBot.js";
+import { io } from "../server.js";
+import { startEventSub } from "../lib/eventSub.js";
 
 const frontendBaseUrl = (
   process.env.FRONTEND_BASE_URL ?? "https://twitch-website-bot.vercel.app"
@@ -16,7 +17,9 @@ export const TwitchAuthRouter = Router();
 TwitchAuthRouter.get("/login", (req, res) => {
   const clientId = TWITCH_CLIENT_ID;
   const redirectUri = TWITCH_REDIRECT_URI;
-  const scope = process.env.TWITCH_SCOPE ?? "channel:manage:broadcast";
+  const scope =
+    process.env.TWITCH_SCOPE ??
+    "channel:manage:broadcast moderator:read:followers channel:read:subscriptions";
   const state = Math.random().toString(36).slice(2);
 
   res.cookie("twitch_oauth_state", state, {
@@ -140,6 +143,8 @@ TwitchAuthRouter.get("/callback", async (req, res) => {
       display_name: user.display_name,
       avatar_url: user.profile_image_url ?? null,
     });
+
+    startEventSub(io, user.id);
 
     const session = signSession({ sid: user.id, login: user.login });
 

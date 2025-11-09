@@ -8,7 +8,7 @@ export function isExpiredOrSoon(expiresAtISO, marginMs = 5 * 60 * 1000) {
   return exp - now <= marginMs;
 }
 
-export async function refreshTokenRow(tenantId, clientId, clientSecret, table) {
+export async function refreshTokenRow(tenantId, clientId, clientSecret, table = "twitch_tokens") {
   const row = db.prepare(`SELECT * FROM ${table} WHERE tenant_id = ?`).get(tenantId);
   if (!row) throw new Error(`No token row in ${table} for tenant ${tenantId}`);
 

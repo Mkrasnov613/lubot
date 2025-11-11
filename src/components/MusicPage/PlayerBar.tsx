@@ -1,10 +1,10 @@
 "use client";
 
 import type { Track } from "@/types/musicPlayer";
-import { showToast } from "@/lib/toast";
 import { useMemo, useRef, useState, useEffect } from "react";
 import { formatTime } from "@/lib/utils";
 import Image from "next/image";
+import { Play, Pause, SkipForward } from "lucide-react";
 
 type YouTubePlayer = {
   getIframe?: () => HTMLIFrameElement | null;
@@ -172,7 +172,7 @@ export default function PlayerBar({
       try {
         // load (not cue) to actually start (muted)
         playerRef.current.loadVideoById?.({ videoId: id, startSeconds: 0 });
-        playerRef.current.unMute();
+        playerRef.current.unMute?.();
       } catch {}
     } else {
       pendingIdRef.current = id;
@@ -230,79 +230,98 @@ export default function PlayerBar({
   }
 
   return (
-    <div className="p-3 md:p-4">
-      <div className="flex items-center gap-4">
-        {/* Artwork / vinyl */}
-        {track && (
-          <div className="relative h-16 w-16 shadow-2xl">
-            <Image
-              src={track.thumb}
-              alt={track.title}
-              fill
-              sizes="64px" // <-- fix Next/Image warning
-              className="z-10 object-cover"
-            />
-            <button
-              onClick={togglePlay}
-              title="Play/Pause"
-              className={`absolute left-1/2 bottom-1/2 z-5 h-14 w-14 translate-y-1/2 shrink-0 rounded-full border border-[var(--color-border)]
-                bg-[radial-gradient(circle_at_30%_30%,hsl(227_76%_78%/.12),transparent_40%),conic-gradient(from_0deg,transparent_0_92%,hsl(232_52%_24%)_92%_100%)]
-                ${spinning ? "animate-spin-slow" : ""}`}
-            >
-              <div className="absolute inset-3 rounded-full border border-[var(--color-border)] bg-[var(--color-bg2)]" />
-              <div className="absolute inset-[38%] rounded-full bg-[var(--color-bg1)]" />
-            </button>
-          </div>
-        )}
+    <div className="p-3 md:p-4 flex flex-col justify-center items-center gap-5">
+      {/* Artwork / vinyl */}
+      <div className="flex flex-col justify-start items-center gap-2">
+        <div className="relative w-40 h-40 shadow-2xl">
+          <Image
+            src={track?.thumb || "/fallback-albumcover.png"}
+            alt={track?.title || "Album cover"}
+            fill
+            className="z-10 rounded-xl object-cover"
+            sizes="208px"
+          />
 
-        <div className="min-w-0 flex-1 pl-5">
-          <div className="truncate text-sm font-medium">
-            {track ? track.title : "Нічого не відтворюється"}
-          </div>
-          <div className="truncate text-xs text-[var(--color-muted)]">
-            {track
-              ? `${track.author?.name ?? "—"} • @${track.requester ?? ""} ${
-                  track.id ?? "no id"
-                }`
-              : "—"}
+          {/* Vinyl */}
+          <div
+            className={`absolute -right-25 top-1/2 -translate-y-1/2 h-52 w-52 rounded-full ${
+              spinning ? "animate-spin-slow" : ""
+            }`}
+          >
+            <Image
+              src="/vanil-record.png"
+              alt=""
+              fill
+              className="object-contain"
+            />
           </div>
         </div>
+        <div
+          className={`truncate flex flex-col justify-center items-center ${track ? "text-xl" : "text-3xl"} font-medium`}
+        >
+          {track ? track.title : "Waiting for a track"}
+          <div className="text-lg text-[var(--color-muted)]">
+            {track
+              ? `${track.author?.name ?? "—"} • @${track.requester ?? ""}`
+              : ""}
+          </div>
+        </div>
+      </div>
 
-        <div className="flex items-center gap-3">
+      <div className="min-w-150 bg-bg2 h-23 rounded-xl p-2 flex flex-col items-center justify-center">
+        <div className="flex items-center justify-center gap-3 flex-1 relative w-20">
+          <button
+            onClick={togglePlay}
+            title="Play/Pause"
+            className="cursor-pointer"
+            disabled={isPlaying}
+          >
+            <div
+              className={`bg-bg2 p-3 ${
+                isPlaying && "hover:bg-bg3"
+              } transition-all rounded-full`}
+            >
+              {spinning ? <Play /> : <Pause />}
+            </div>
+          </button>
           <button
             onClick={nextTrack}
-            className="rounded-lg border border-[var(--color-border)] px-3 py-1 text-xs text-[var(--color-muted)] hover:bg-[var(--color-bg2)]"
+            disabled={isPlaying}
+            className="absolute -right-10 cursor-pointer"
           >
-            Next
+            <div
+              className={`bg-bg2 p-3 ${
+                isPlaying && "hover:bg-bg3"
+              } transition-all rounded-full`}
+            >
+              <SkipForward />
+            </div>
           </button>
-          <div className="text-right text-xs tabular-nums text-[var(--color-muted)]">
-            <span>{formatTime(localPos || positionSec)}</span>
-            <span className="mx-1">/</span>
-            <span>
-              {formatTime(localDur || durationSec || track?.durationSec || 0)}
-            </span>
-          </div>
         </div>
-      </div>
 
-      {/* Hidden iframe mount point (0x0) */}
-      <div className="h-0 w-0 overflow-hidden">
-        <div ref={mountRef} />
-      </div>
+        {/* Hidden iframe mount point (0x0) */}
+        <div className="h-0 w-0 overflow-hidden">
+          <div ref={mountRef} />
+        </div>
 
-      {/* Progress */}
-      <div className="mt-3">
-        <input
-          type="range"
-          min={0}
-          max={100}
-          step={0.1}
-          value={progress}
-          readOnly
-          className="range block h-2 w-full cursor-default appearance-none rounded-full bg-[var(--color-bg3)] outline-none
+        {/* Progress */}
+        <div className="mt-3 flex self-stretch items-center gap-3 text-xs tabular-nums text-[var(--color-muted)]">
+          <span>{formatTime(localPos || positionSec)}</span>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={0.1}
+            value={progress}
+            readOnly
+            className="range block h-2 w-full cursor-default appearance-none rounded-full bg-[var(--color-bg3)] outline-none
                      [::-webkit-slider-thumb]:h-3 [::-webkit-slider-thumb]:w-3 [::-webkit-slider-thumb]:appearance-none
                      [::-webkit-slider-thumb]:rounded-full [::-webkit-slider-thumb]:bg-[var(--color-highlight)]"
-        />
+          />
+          <span>
+            {formatTime(localDur || durationSec || track?.durationSec || 0)}
+          </span>
+        </div>
       </div>
     </div>
   );

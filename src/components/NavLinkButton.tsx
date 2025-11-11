@@ -1,19 +1,26 @@
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { JSX } from "react";
 
 export default function NavLinkButton({
   path,
   img,
+  text,
 }: {
   path: string;
   img: JSX.Element;
+  text: string;
 }) {
+  const pathname = usePathname()
   return (
     <Link
       href={path}
-      className="p-4 flex-1 rounded-full flex items-center justify-start gap-5 hover:bg-gradient-to-b hover:from-bg2  hover:shadow-large hover:to-bg3 hover:border-1 border-t-highlight border-border "
+      className=""
     >
-      {img}
+      <div className={`${path === pathname && 'bg-bg3'} flex w-full font-bold pl-7 py-3 gap-5 justify-start items-center hover:bg-bg3`}>
+        {img}
+        <span>{text}</span>
+      </div>
     </Link>
   );
 }

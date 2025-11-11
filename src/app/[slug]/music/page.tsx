@@ -1,16 +1,18 @@
-import IntroSection from "@/components/IntroSection";
-import PlayerPanel from "@/components/PlayerPanel";
+import IntroSection from "@/components/MusicPage/IntroSection";
+import PlayerPanel from "@/components/MusicPage/PlayerPanel";
 
 export default function MusicPage() {
   return (
-    <section className="mx-auto max-w-[1780px] min-h-screen px-6 py-10 text-[var(--color-text)] bg-bg1">
-      <div className="grid grid-cols-1 gap-6  p-4 md:grid-cols-2 md:p-6">
+    <section className="flex flex-wrap justify-around gap-5 items-center min-h-screen mx-auto max-w-[1680px] p-10 text-[var(--color-text)] bg-bg1">
+      
         {/* LEFT SIDE */}
-        <IntroSection />
-
-        {/* RIGHT SIDE */}
-        <PlayerPanel />
-      </div>
+        <div className="w-[700px]">
+          {/* RIGHT SIDE */}
+          <PlayerPanel />
+        </div>
+        <div className="">
+          <IntroSection />
+        </div>
     </section>
   );
 }

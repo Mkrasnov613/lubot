@@ -85,7 +85,7 @@ export default function LiveEventFeed({
   }, [socketUrl]);
 
   return (
-    <div className="rounded-xl p-3 max-h-[380px] overflow-y-scroll">
+    <div className="rounded-xl p-3 max-h-[380px] overflow-y-scroll scroll-smooth scrollbar">
       <ul className="space-y-4 w-[400px]">
         {items.map((item) => (
           <li

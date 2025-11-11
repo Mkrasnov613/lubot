@@ -1,7 +1,7 @@
-import TwitchChannelComponent from "@/components/TwitchChannelComponent";
+import TwitchChannelComponent from "@/components/DashboardPage/TwitchChannelComponent";
 import { Suspense } from "react";
 import { cookies } from "next/headers";
-import LiveEventFeed from "@/components/LiveEventFeed";
+import LiveEventFeed from "@/components/DashboardPage/LiveEventFeed";
 
 type DashboardPageProps = {
   params: Promise<{ slug: string }>;
@@ -39,7 +39,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
 
   return (
     <div className="flex flex-col max-w-[1680px] mx-auto gap-6 p-6">
-      <div className="flex flex-row justify-between items-star ">
+      <div className="flex flex-row justify-between items-start flex-wrap-reverse gap-10">
         <Suspense fallback={''}>
           <LiveEventFeed initialData={activity} />
         </Suspense>

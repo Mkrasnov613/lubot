@@ -1,5 +1,11 @@
 import "./globals.css";
 import { Toaster } from "sonner";
+import { Tajawal } from "next/font/google";
+
+const tajawal = Tajawal({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+});
 
 export default function RootLayout({
   children,
@@ -8,9 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`antialiased text-white`}
-      >
+      <body className={`antialiased text-white ${tajawal.className}`}>
         {children}
         <Toaster />
       </body>

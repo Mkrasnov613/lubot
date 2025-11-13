@@ -66,7 +66,6 @@ export default async function TwitchChannelComponent({
     <article className="flex flex-col gap-5 min-h-[510px] max-w-[1050px] p-5 shadow-large bg-gradient-to-b from-bg3 to-5% to-bg2 border-1 border-border border-t-highlight rounded-2xl self-end">
       <div className="flex items-center">
         <TwitchPlayer slug={slug} />
-        <TwitchChat slug={slug} />
       </div>
 
       <div className="flex gap-5 font-semibold justify-start items-center text-text">

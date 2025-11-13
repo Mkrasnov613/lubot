@@ -2,6 +2,7 @@ import TwitchChannelComponent from "@/components/DashboardPage/TwitchChannelComp
 import { Suspense } from "react";
 import { cookies } from "next/headers";
 import LiveEventFeed from "@/components/DashboardPage/LiveEventFeed";
+import TwitchChat from "@/components/DashboardPage/TwitchChat";
 
 type DashboardPageProps = {
   params: Promise<{ slug: string }>;
@@ -31,22 +32,27 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
 
   if (!followersResponse.ok) {
     const txt = await followersResponse.text();
-    throw new Error(`/api/twitch/followers failed: ${followersResponse.status} ${txt}`);
+    throw new Error(
+      `/api/twitch/followers failed: ${followersResponse.status} ${txt}`
+    );
   }
 
   const { activity }: { activity: ActivityItem[] } =
     await followersResponse.json();
 
   return (
-    <div className="flex flex-col max-w-[1680px] mx-auto gap-6 p-6">
-      <div className="flex flex-row justify-between items-start flex-wrap-reverse gap-10">
-        <Suspense fallback={''}>
-          <LiveEventFeed initialData={activity} />
-        </Suspense>
+    <div className="flex flex-col max-w-[1680px] mx-auto gap-6 px-8 py-6">
+      <div className="flex flex-row justify-between items-start flex-wrap ">
         <Suspense fallback={""}>
           <TwitchChannelComponent slug={slug} />
         </Suspense>
+        <Suspense>
+          <TwitchChat slug={slug} />
+        </Suspense>
       </div>
+      <Suspense fallback={""}>
+        <LiveEventFeed initialData={activity} />
+      </Suspense>
     </div>
   );
 }

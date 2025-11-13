@@ -85,12 +85,12 @@ export default function LiveEventFeed({
   }, [socketUrl]);
 
   return (
-    <div className="rounded-xl p-3 max-h-[380px] overflow-y-scroll scroll-smooth scrollbar">
-      <ul className="space-y-4 w-[400px]">
+    <div className="rounded-xl p-3 overflow-x-scroll w-full scroll-smooth scrollbar">
+      <ul className="flex gap-4 items-center">
         {items.map((item) => (
           <li
             key={item.id}
-            className="relative rounded-xl bg-gradient-to-b from-bg3 to-bg2 border-1 border-border p-2 flex h-20 gap-5"
+            className="relative rounded-xl bg-gradient-to-b from-bg3 to-bg2 border-1 border-border p-2 flex h-20 gap-5 min-w-100"
           >
             <Image
               src={item.profile_image_url || "/default-avatar.png"}

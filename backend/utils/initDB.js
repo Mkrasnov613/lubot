@@ -18,16 +18,13 @@ export function initDB() {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
-  CREATE TABLE IF NOT EXISTS tenant_bot (
-    tenant_id TEXT PRIMARY KEY,
-    bot_login TEXT,
-    bot_display_name TEXT,
-    access_token TEXT,
-    refresh_token TEXT,
-    access_expires_at DATETIME,
-    scope TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );
+ CREATE TABLE IF NOT EXISTS lubot_tokens (
+  id TEXT PRIMARY KEY,              
+  access_token TEXT NOT NULL,
+  refresh_token TEXT NOT NULL,
+  access_expires_at TEXT NOT NULL, 
+  scope TEXT
+);
 
   CREATE TABLE IF NOT EXISTS memberships (
     tenant_id TEXT,

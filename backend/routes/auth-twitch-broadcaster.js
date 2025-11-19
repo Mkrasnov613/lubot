@@ -4,6 +4,7 @@ import { signSession, verifySession } from "../utils/session.js";
 import db from "../db.js";
 import { io } from "../server.js";
 import { startEventSub } from "../lib/eventSub.js";
+import { enableBot } from "../lib/botManager.js";
 
 const frontendBaseUrl = (
   process.env.FRONTEND_BASE_URL ?? "https://twitch-website-bot.vercel.app"
@@ -145,6 +146,12 @@ TwitchAuthRouter.get("/callback", async (req, res) => {
     });
 
     startEventSub(io, user.id);
+
+    try {
+      await enableBot(user.id);
+    } catch (e) {
+      console.error("Failed to connect LuBot after login:", e);
+    }
 
     const session = signSession({ sid: user.id, login: user.login });
 

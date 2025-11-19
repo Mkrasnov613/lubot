@@ -9,13 +9,14 @@ import cookieParser from "cookie-parser";
 
 import { APIRouter } from "./routes/api/player.js";
 import { dataTenantRouter } from "./routes/api/data-tenant.js";
-import { TwitchAuthRouter } from "./routes/auth-twitch.js";
-
 import { initPlayer, getState } from "./lib/player.js";
 
 import { startTokenScheduler } from "./utils/tokenScheduler.js";
 import { initDB } from "./utils/initDB.js";
 import { TwitchRouter } from "./routes/api/twitch.js";
+import { TwitchBotAuthRouter } from "./routes/auth-twitch-bot.js";
+import { TwitchAuthRouter } from "./routes/auth-twitch-broadcaster.js";
+import { BotRouter } from "./routes/api/bot.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -51,10 +52,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("backend"));
 app.use(cookieParser());
-app.use("/api/twitch", TwitchRouter)
+app.use("/api/twitch", TwitchRouter);
+app.use("/api/bot", BotRouter);
 app.use("/api/player", APIRouter);
 app.use("/api/data", dataTenantRouter);
 app.use("/auth/twitch", TwitchAuthRouter);
+app.use("/auth/twitch-bot", TwitchBotAuthRouter);
 
 io.on("connection", (socket) => {
   const { QUEUE, nowPlaying } = getState();

@@ -7,8 +7,6 @@ import { enqueue, playNext, getState, resolveTrack, skip } from "../lib/player.j
 export async function initBot(tenantId) {
   const botAccessToken = await refreshTokenRow(
     tenantId,
-    process.env.TWITCH_CLIENT_ID,
-    process.env.TWITCH_CLIENT_SECRET,
     "tenant_bot"
   );
 

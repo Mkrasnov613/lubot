@@ -1,13 +1,11 @@
 import db from "../db.js";
-import { refreshTokenRow, isExpiredOrSoon } from "../lib/twitch-tokens.js";
+import { refreshTokenRow, isExpiredOrSoon } from "../lib/twitchTokens.js";
 
 const TABLES = ["twitch_tokens"]; 
 
 export function startTokenScheduler({
   intervalMs = 10 * 60 * 1000, // every 10 min
   marginMs = 5 * 60 * 1000,    // refresh if expiring within 5 min
-  clientId = process.env.TWITCH_CLIENT_ID,
-  clientSecret = process.env.TWITCH_CLIENT_SECRET,
 } = {}) {
   async function sweep() {
     for (const table of TABLES) {
@@ -15,7 +13,7 @@ export function startTokenScheduler({
       for (const r of rows) {
         if (isExpiredOrSoon(r.access_expires_at, marginMs)) {
           try {
-            await refreshTokenRow(r.tenant_id, clientId, clientSecret, table);
+            await refreshTokenRow(r.tenant_id, table);
             console.log(`[OAuth] Refreshed ${table} for tenant ${r.tenant_id}`);
           } catch (e) {
             console.error(`[OAuth] Refresh failed for ${table}/${r.tenant_id}:`, e.message);

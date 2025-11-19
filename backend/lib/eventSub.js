@@ -1,5 +1,5 @@
 import WebSocket from "ws";
-import { refreshTokenRow } from "./twitch-tokens.js";
+import { refreshTokenRow } from "./twitchTokens.js";
 
 async function createSub({ token, sessionId, type, version, condition }) {
   const res = await fetch(
@@ -30,9 +30,7 @@ export async function startEventSub(io, broadcasterId) {
   const ws = new WebSocket("wss://eventsub.wss.twitch.tv/ws?keepalive_timeout_seconds=30");
 
   const token = await refreshTokenRow(
-    broadcasterId,
-    process.env.TWITCH_CLIENT_ID,
-    process.env.TWITCH_CLIENT_SECRET
+    broadcasterId
   );
 
   ws.on("message", async (raw) => {

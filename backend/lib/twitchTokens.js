@@ -8,7 +8,7 @@ export function isExpiredOrSoon(expiresAtISO, marginMs = 5 * 60 * 1000) {
   return exp - now <= marginMs;
 }
 
-export async function refreshTokenRow(tenantId, clientId, clientSecret, table = "twitch_tokens") {
+export async function refreshTokenRow(tenantId, table = "twitch_tokens") {
   const row = db.prepare(`SELECT * FROM ${table} WHERE tenant_id = ?`).get(tenantId);
   if (!row) throw new Error(`No token row in ${table} for tenant ${tenantId}`);
 
@@ -17,8 +17,8 @@ export async function refreshTokenRow(tenantId, clientId, clientSecret, table = 
   const body = new URLSearchParams({
     grant_type: "refresh_token",
     refresh_token: row.refresh_token,
-    client_id: clientId,
-    client_secret: clientSecret,
+    client_id: process.env.TWITCH_CLIENT_ID,
+    client_secret: process.env.TWITCH_CLIENT_SECRET,
   });
 
   const res = await axios.post(

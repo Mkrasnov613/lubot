@@ -1,7 +1,7 @@
 import { Router } from "express";
 import axios from "axios";
 import { requireAuth } from "../../middleware/requireAuth.js";
-import { refreshTokenRow } from "../../lib/twitch-tokens.js";
+import { refreshTokenRow } from "../../lib/twitchTokens.js";
 import { chunk } from "../../utils/chunk.js";
 
 export const TwitchRouter = Router();
@@ -14,8 +14,6 @@ TwitchRouter.get("/channel", requireAuth, async (req, res) => {
   try {
     const token = await refreshTokenRow(
       twitchUserID,
-      TWITCH_CLIENT_ID,
-      TWITCH_CLIENT_SECRET,
       "twitch_tokens"
     );
 
@@ -49,8 +47,6 @@ TwitchRouter.get("/game-art", requireAuth, async (req, res) => {
   try {
     const token = await refreshTokenRow(
       twitchUserID,
-      TWITCH_CLIENT_ID,
-      TWITCH_CLIENT_SECRET,
       "twitch_tokens"
     );
 
@@ -83,8 +79,6 @@ TwitchRouter.get("/search/categories", requireAuth, async (req, res) => {
   try {
     const token = await refreshTokenRow(
       twitchUserID,
-      TWITCH_CLIENT_ID,
-      TWITCH_CLIENT_SECRET
     );
 
     const response = await axios.get(
@@ -151,8 +145,6 @@ TwitchRouter.get("/followers", requireAuth, async (req, res) => {
 
     const token = await refreshTokenRow(
       twitchUserID,
-      TWITCH_CLIENT_ID,
-      TWITCH_CLIENT_SECRET,
       "twitch_tokens"
     );
 

@@ -1,5 +1,5 @@
 // lib/luBotTokens.js
-import db from "../db.js";
+import { db } from "../db.js";
 import axios from "axios";
 
 const TWITCH_CLIENT_ID = (process.env.TWITCH_CLIENT_ID || "").trim();
@@ -70,7 +70,7 @@ function seedFromEnvIfNeeded() {
     access_token: SEED_ACCESS,
     refresh_token: SEED_REFRESH,
     access_expires_at: expiresAt,
-    scope: "chat:read chat:edit",
+    scope: "chat:read chat:edit moderator:manage:banned_users",
   });
 
   console.log("🌱 Seeded LuBot tokens from .env into lubot_tokens");

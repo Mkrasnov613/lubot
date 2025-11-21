@@ -1,6 +1,7 @@
 // lib/botManager.js
 import tmi from "tmi.js";
-import db from "../db.js";
+import { db } from "../db.js";
+import axios from "axios";
 import {
   enqueue,
   playNext,
@@ -9,8 +10,10 @@ import {
   skip,
 } from "../lib/player.js";
 import { getBotAccessToken } from "./botTokens.js";
+import { refreshTokenRow } from "./twitchTokens.js";
 
 const conns = new Map(); // tenantId -> tmi.Client
+const nukeWordsCache = new Map(); // broadcasterId -> [word, ...]
 
 function getTenantLogin(tenantId) {
   return db
@@ -24,14 +27,33 @@ function getBroadcasterLoginFallback(tenantId) {
     .get(tenantId);
 }
 
+function loadNukeWords(broadcasterId) {
+  if (nukeWordsCache.has(broadcasterId)) {
+    return nukeWordsCache.get(broadcasterId);
+  }
+
+  const rows = db
+    .prepare("SELECT word FROM nuke_words WHERE broadcaster_id = ?")
+    .all(broadcasterId);
+
+  const words = rows.map((r) => r.word.toLowerCase());
+  nukeWordsCache.set(broadcasterId, words);
+  return words;
+}
+
+// Call this from API after POST/DELETE to update cache immediately:
+export function invalidateNukeCache(broadcasterId) {
+  nukeWordsCache.delete(broadcasterId);
+}
+
 export async function enableBot(tenantId) {
   if (conns.has(tenantId)) return;
 
-  const BOT_LOGIN = (process.env.LUBOT_BOT_NAME || "").toLowerCase();
+  const BOT_LOGIN = process.env.LUBOT_BOT_NAME || "";
 
-  const token = await getBotAccessToken();
+  const botToken = await getBotAccessToken();
+  const twitchToken = await refreshTokenRow(tenantId)
 
-  // Which channel do we join? → the streamer’s login/slug
   const tenant = getTenantLogin(tenantId);
   const broadcaster = getBroadcasterLoginFallback(tenantId);
 
@@ -49,41 +71,94 @@ export async function enableBot(tenantId) {
   const client = new tmi.Client({
     options: { skipUpdatingEmotesets: true },
     identity: {
-      username: BOT_LOGIN,                 // LuBot
-      password: `oauth:${token}`,     // LuBot token
+      username: "lutikbot",
+      password: `oauth:${botToken}`,
     },
-    channels: [`#${channelLogin}`],       // Join streamer channel
+    channels: [`#${channelLogin}`],
   });
 
   client.on("message", async (channel, tags, message, self) => {
     if (self) return;
 
+    console.log("[LuBot message]", {
+      channel,
+      user: tags.username,
+      message,
+    });
+
+    const broadcasterId = tags["room-id"];
+    const username = tags["username"];
     const isMod =
       tags.mod ||
       tags["user-type"] === "mod" ||
       tags.badges?.broadcaster === "1";
+
+    if (!broadcasterId || !username) {
+      return;
+    }
+
+    const msg = message.toLowerCase();
+
+    try {
+      const words = loadNukeWords(broadcasterId);
+
+      let hitWord = null;
+      for (const w of words) {
+        if (!w) continue;
+        if (msg.includes(w)) {
+          hitWord = w;
+          break;
+        }
+      }
+
+      if (hitWord) {
+        try {
+          const msgId = tags.id;
+          console.log("Try delete", { channel, username, msgId, hitWord });
+          if (msgId) {
+            const body = new URLSearchParams({
+              broadcaster_id: broadcasterId,
+              moderator_id: broadcasterId,
+              message_id: msgId,
+            });
+            await axios.delete(
+              "https://api.twitch.tv/helix/moderation/chat",
+              body.toString(),
+              {
+                headers: {
+                  Authorization: `Bearer ${twitchToken}`,
+                  "Client-Id": process.env.TWITCH_CLIENT_ID,
+                },
+              }
+            );
+            console.log(
+              `💣 Deleted message from ${username} containing "${hitWord}"`
+            );
+          }
+        } catch (e) {
+          console.error("Error nuking user:", e);
+        }
+      }
+    } catch (e) {
+      console.error("Error loading nuke words:", e);
+    }
 
     const [rawCmd, ...rest] = message.trim().split(/\s+/);
     const cmd = rawCmd.toLowerCase();
 
     if (cmd === "!sr" || cmd === "!songrequest") {
       const q = rest.join(" ").trim();
-      if (!q)
-        return client.say(
-          channel,
-          `@${tags.username}, дай посилання або запит.`
-        );
+      if (!q) {
+        return client.say(channel, `@${username}, дай посилання або запит.`);
+      }
       try {
-        const track = await resolveTrack(q, tags.username);
+        const track = await resolveTrack(q, username);
         enqueue(track);
         if (!getState().nowPlaying) playNext();
-        client.say(
-          channel,
-          `Додано: ${track.title} (заявка від @${tags.username})`
-        );
+        client.say(channel, `Додано: ${track.title} (заявка від @${username})`);
       } catch (e) {
         const msg = e?.message || String(e);
-        client.say(channel, `@${tags.username} відхилено: ${msg}`);
+        client.say(channel, `@${username} відхилено: ${msg}`);
       }
     }
 
@@ -112,9 +187,7 @@ export async function enableBot(tenantId) {
   });
 
   client.on("connected", () =>
-    console.log(
-      `✅ LuBot connected for tenant=${tenantId} in #${channelLogin}`
-    )
+    console.log(`✅ LuBot connected for tenant=${tenantId} in #${channelLogin}`)
   );
   client.on("disconnected", (reason) => {
     console.log(`❌ LuBot disconnected for ${tenantId}: ${reason}`);

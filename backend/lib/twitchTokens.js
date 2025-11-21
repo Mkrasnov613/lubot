@@ -1,5 +1,5 @@
 import axios from "axios";
-import db from "../db.js";
+import { db } from "../db.js";
 
 export function isExpiredOrSoon(expiresAtISO, marginMs = 5 * 60 * 1000) {
   if (!expiresAtISO) return true;

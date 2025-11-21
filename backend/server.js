@@ -17,6 +17,7 @@ import { TwitchRouter } from "./routes/api/twitch.js";
 import { TwitchBotAuthRouter } from "./routes/auth-twitch-bot.js";
 import { TwitchAuthRouter } from "./routes/auth-twitch-broadcaster.js";
 import { BotRouter } from "./routes/api/bot.js";
+import { NukeRouter } from "./routes/api/nuke-word.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -54,6 +55,7 @@ app.use(express.static("backend"));
 app.use(cookieParser());
 app.use("/api/twitch", TwitchRouter);
 app.use("/api/bot", BotRouter);
+app.use("/api/nuke-words", NukeRouter)
 app.use("/api/player", APIRouter);
 app.use("/api/data", dataTenantRouter);
 app.use("/auth/twitch", TwitchAuthRouter);

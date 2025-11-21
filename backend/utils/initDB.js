@@ -1,4 +1,4 @@
-import db from "../db.js";
+import { db } from "../db.js";
 
 export function initDB() {
   const schema = `
@@ -18,13 +18,23 @@ export function initDB() {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
- CREATE TABLE IF NOT EXISTS lubot_tokens (
-  id TEXT PRIMARY KEY,              
-  access_token TEXT NOT NULL,
-  refresh_token TEXT NOT NULL,
-  access_expires_at TEXT NOT NULL, 
-  scope TEXT
-);
+  CREATE TABLE IF NOT EXISTS lubot_tokens (
+    id TEXT PRIMARY KEY,              
+    access_token TEXT NOT NULL,
+    refresh_token TEXT NOT NULL,
+    access_expires_at TEXT NOT NULL, 
+    scope TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS nuke_words (
+    id INTEGER PRIMARY KEY,
+    broadcaster_id TEXT NOT NULL,                      
+    word TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_nuke_words_broadcaster
+    ON nuke_words (broadcaster_id);
 
   CREATE TABLE IF NOT EXISTS memberships (
     tenant_id TEXT,

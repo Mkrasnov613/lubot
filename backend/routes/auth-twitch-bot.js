@@ -1,7 +1,7 @@
 // routes/auth-twitch-bot.ts
 import { Router } from "express";
 import axios from "axios";
-import db from "../db.js";
+import { db } from "../db.js";
 import { signSession, verifySession } from "../utils/session.js";
 import { enableBot } from "../lib/botManager.js";
 

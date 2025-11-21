@@ -1,6 +1,6 @@
 // utils/initBot.js
 import tmi from "tmi.js";
-import db from "../db.js";
+import { db } from "../db.js";
 import { refreshTokenRow } from "../lib/twitch-tokens.js";
 import { enqueue, playNext, getState, resolveTrack, skip } from "../lib/player.js";
 

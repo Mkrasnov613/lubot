@@ -27,7 +27,7 @@ async function createSub({ token, sessionId, type, version, condition }) {
 
 export async function startEventSub(io, broadcasterId) {
   const nsp = io.of("/eventsub"); // client connects to ws://host/socket.io?ns=/eventsub
-  const ws = new WebSocket("wss://eventsub.wss.twitch.tv/ws?keepalive_timeout_seconds=30");
+  const ws = new WebSocket("wss://eventsub.wss.twitch.tv/ws?keepalive_timeout_seconds=60");
 
   const token = await refreshTokenRow(
     broadcasterId
@@ -42,7 +42,6 @@ export async function startEventSub(io, broadcasterId) {
       return;
     }
     const type = msg?.metadata?.message_type;
-    console.log(type);
 
     switch (type) {
       case "session_welcome":

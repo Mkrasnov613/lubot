@@ -1,4 +1,3 @@
-// lib/luBotTokens.js
 import { db } from "../db.js";
 import axios from "axios";
 
@@ -20,11 +19,11 @@ db.prepare(
 `
 ).run();
 
-function getBotRow() {
+export function getBotRow() {
   return db.prepare(`SELECT * FROM lubot_tokens WHERE id = 'global'`).get();
 }
 
-function saveBotRow({ access_token, refresh_token, expires_in, scope }) {
+export function saveBotRow({ access_token, refresh_token, expires_in, scope }) {
   const expiresAt = new Date(Date.now() + expires_in * 1000).toISOString();
 
   db.prepare(
@@ -45,45 +44,13 @@ function saveBotRow({ access_token, refresh_token, expires_in, scope }) {
   });
 }
 
-function seedFromEnvIfNeeded() {
-  const row = getBotRow();
-  if (row) return row;
-
-  if (!SEED_ACCESS || !SEED_REFRESH) {
-    return null;
-  }
-
-  // give it some initial fake expiry in the future, it will be refreshed soon anyway
-  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // +1 day
-
-  db.prepare(
-    `
-    INSERT INTO lubot_tokens (id, access_token, refresh_token, access_expires_at, scope)
-    VALUES ('global', @access_token, @refresh_token, @access_expires_at, @scope)
-    ON CONFLICT(id) DO UPDATE SET
-      access_token = excluded.access_token,
-      refresh_token = excluded.refresh_token,
-      access_expires_at = excluded.access_expires_at,
-      scope = excluded.scope;
-  `
-  ).run({
-    access_token: SEED_ACCESS,
-    refresh_token: SEED_REFRESH,
-    access_expires_at: expiresAt,
-    scope: "chat:read chat:edit moderator:manage:banned_users",
-  });
-
-  console.log("🌱 Seeded LuBot tokens from .env into lubot_tokens");
-  return getBotRow();
-}
-
 // Main function: always returns a valid LuBot access token
 export async function getBotAccessToken() {
-  const row = getBotRow() || seedFromEnvIfNeeded();
+  let row = getBotRow();
 
   if (!row) {
     throw new Error(
-      "No LuBot tokens in DB and no env seed. Set LUBOT_ACCESS_TOKEN and LUBOT_REFRESH_TOKEN or insert manually."
+      "No LuBot tokens. Visit /auth/lubot/login as the bot account or set LUBOT_OAUTH_TOKEN/LUBOT_REFRESH_TOKEN."
     );
   }
 
@@ -95,7 +62,7 @@ export async function getBotAccessToken() {
     return row.access_token;
   }
 
-  // Refresh
+  // Refresh with Twitch OAuth
   const body = new URLSearchParams({
     client_id: TWITCH_CLIENT_ID,
     client_secret: TWITCH_CLIENT_SECRET,
@@ -119,7 +86,7 @@ export async function getBotAccessToken() {
     return access_token;
   } catch (e) {
     console.error("Failed to refresh LuBot token:", e?.response?.data || e);
-    // fallback to old token – might fail later, but avoids crashing now
+    // Fallback: use old token instead of returning undefined
     return row.access_token;
   }
 }

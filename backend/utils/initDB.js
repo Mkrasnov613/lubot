@@ -19,7 +19,7 @@ export function initDB() {
   );
 
   CREATE TABLE IF NOT EXISTS lubot_tokens (
-    id TEXT PRIMARY KEY,              
+    tenant_id TEXT PRIMARY KEY,              
     access_token TEXT NOT NULL,
     refresh_token TEXT NOT NULL,
     access_expires_at TEXT NOT NULL, 

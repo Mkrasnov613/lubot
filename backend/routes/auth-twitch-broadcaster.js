@@ -20,7 +20,7 @@ TwitchAuthRouter.get("/login", (req, res) => {
   const redirectUri = TWITCH_REDIRECT_URI;
   const scope =
     process.env.TWITCH_SCOPE ??
-    "channel:manage:broadcast moderator:read:followers channel:read:subscriptions";
+    "channel:manage:broadcast moderator:read:followers channel:read:subscriptions moderator:manage:chat_messages";
   const state = Math.random().toString(36).slice(2);
 
   res.cookie("twitch_oauth_state", state, {

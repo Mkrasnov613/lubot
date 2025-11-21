@@ -52,7 +52,7 @@ export async function enableBot(tenantId) {
   const BOT_LOGIN = process.env.LUBOT_BOT_NAME || "";
 
   const botToken = await getBotAccessToken();
-  const twitchToken = await refreshTokenRow(tenantId)
+  const twitchToken = await refreshTokenRow(tenantId);
 
   const tenant = getTenantLogin(tenantId);
   const broadcaster = getBroadcasterLoginFallback(tenantId);
@@ -116,21 +116,17 @@ export async function enableBot(tenantId) {
           const msgId = tags.id;
           console.log("Try delete", { channel, username, msgId, hitWord });
           if (msgId) {
-            const body = new URLSearchParams({
-              broadcaster_id: broadcasterId,
-              moderator_id: broadcasterId,
-              message_id: msgId,
+            await axios.delete("https://api.twitch.tv/helix/moderation/chat", {
+              params: {
+                broadcaster_id: broadcasterId,
+                moderator_id: broadcasterId,
+                message_id: msgId,
+              },
+              headers: {
+                Authorization: `Bearer ${twitchToken}`,
+                "Client-Id": process.env.TWITCH_CLIENT_ID,
+              },
             });
-            await axios.delete(
-              "https://api.twitch.tv/helix/moderation/chat",
-              body.toString(),
-              {
-                headers: {
-                  Authorization: `Bearer ${twitchToken}`,
-                  "Client-Id": process.env.TWITCH_CLIENT_ID,
-                },
-              }
-            );
             console.log(
               `💣 Deleted message from ${username} containing "${hitWord}"`
             );

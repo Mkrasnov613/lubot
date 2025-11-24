@@ -41,7 +41,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     await followersResponse.json();
 
   return (
-    <div className="flex flex-col max-w-[1680px] mx-auto gap-6 px-8 py-6">
+    <div className="flex flex-col max-w-[1680px] mx-auto gap-6 px-8 py-6 ">
       <div className="flex flex-row justify-between items-start flex-wrap ">
         <Suspense fallback={""}>
           <TwitchChannelComponent slug={slug} />

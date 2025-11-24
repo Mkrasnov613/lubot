@@ -1,6 +1,6 @@
-import TwitchChat from "./TwitchChat";
 import TwitchPlayer from "./TwitchPlayer";
 import { cookies } from "next/headers";
+import { Suspense } from "react";
 import Image from "next/image";
 import EditStreamMeta from "./EditStreamMeta";
 import { revalidatePath } from "next/cache";
@@ -63,11 +63,12 @@ export default async function TwitchChannelComponent({
   }
 
   return (
-    <article className="flex flex-col gap-5 min-h-[510px] max-w-[1050px] p-5 shadow-large bg-gradient-to-b from-bg3 to-5% to-bg2 border-1 border-border border-t-highlight rounded-2xl self-end">
+    <article className="flex flex-col gap-5 min-h-[510px] min-w-[1050px] max-w-[1050px] p-5 shadow-large bg-gradient-to-b from-bg3 to-5% to-bg2 border-1 border-border border-t-highlight rounded-2xl self-end">
       <div className="flex items-center">
-        <TwitchPlayer slug={slug} />
+        <Suspense fallback={""}>
+          <TwitchPlayer slug={slug} />
+        </Suspense>
       </div>
-
       <div className="flex gap-5 font-semibold justify-start items-center text-text">
         {boxArtUrl ? (
           <Image

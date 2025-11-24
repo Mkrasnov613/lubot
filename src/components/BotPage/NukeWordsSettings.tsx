@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Bomb } from "lucide-react";
 
 type NukeWord = {
   id: number;
@@ -13,6 +14,7 @@ export default function NukeWordsSettings() {
   const [newWord, setNewWord] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -69,46 +71,50 @@ export default function NukeWordsSettings() {
   }
 
   return (
-    <div className="space-y-4 rounded-2xl border border-border bg-bg2 p-4">
-      <h2 className="text-lg font-semibold">Nuke words</h2>
-
-      <form onSubmit={handleAdd} className="flex gap-2">
+    <div className="relative space-y-4 rounded-2xl border border-border bg-bg2 p-4 max-h-37">
+      <form onSubmit={handleAdd} className="relative">
         <input
-          className="flex-1 rounded-xl border border-border bg-bg px-3 py-2 text-sm outline-none"
-          placeholder="badword"
+          className="flex-1 rounded-xl border border-border focus:border-highlight bg-bg px-3 py-2 text-lg outline-none h-15 w-[400px] "
+          placeholder="Blacklist a phrase..."
           value={newWord}
           onChange={(e) => setNewWord(e.target.value)}
         />
         <button
           type="submit"
           disabled={saving || !newWord.trim()}
-          className="rounded-xl px-4 py-2 text-sm font-medium bg-purple-600 text-white disabled:opacity-60"
+          className="absolute cursor-pointer right-0 top-1/2 -translate-y-1/2 rounded-r-xl px-4 py-2 border-highlight border-1 text-sm font-medium h-full bg-bg3 active:bg-twitch hover:bg-twitch/50 text-white disabled:border-0 disabled:bg-transparent disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {saving ? "Adding..." : "Add"}
+          <Bomb />
         </button>
       </form>
 
-      {loading ? (
-        <p className="text-sm text-muted">Loading…</p>
-      ) : words.length === 0 ? (
-        <p className="text-sm text-muted">No nuke words yet.</p>
-      ) : (
-        <ul className="space-y-2">
-          {words.map((w) => (
-            <li
-              key={w.id}
-              className="flex items-center justify-between rounded-xl bg-bg px-3 py-2 text-sm"
-            >
-              <span>{w.word}</span>
-              <button
-                onClick={() => handleDelete(w.id)}
-                className="text-xs text-red-400 hover:text-red-300"
+      <button
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="rounded-xl w-40 h-10 bg-gradient-to-b from-bg2 from-90% to-bg3 border-1 border-border hover:from-5% hover:border-t-highlight transition-all"
+      >
+        {isOpen ? "Hide" : "Show"} Blacklist
+      </button>
+
+      {isOpen && (
+        <>
+        {loading && <p>loading...</p>}
+          <ul className="absolute -bottom-35 right-4 space-y-2 w-1/2 h-50 rounded-xl border-border border-t-highlight border overflow-y-scroll flex flex-col justify-start scrollbar p-2 bg-gradient-to-b from-bg2 to-bg3">
+            {words.map((w) => (
+              <li
+                key={w.id}
+                className="flex items-center justify-between rounded-xl bg-bg px-3 py-2 text-md"
               >
-                Remove
-              </button>
-            </li>
-          ))}
-        </ul>
+                <span>{w.word}</span>
+                <button
+                  onClick={() => handleDelete(w.id)}
+                  className="text-xs cursor-pointer text-red-400 hover:text-red-300"
+                >
+                  Remove
+                </button>
+              </li>
+            ))}            
+          </ul>
+        </>
       )}
     </div>
   );

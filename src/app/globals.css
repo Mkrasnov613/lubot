@@ -52,7 +52,6 @@
 body {
   background: var(--bg-dark);
   color: var(--text);
-  font-family: Arial, Helvetica, sans-serif;
 }
 
 @layer utilities {

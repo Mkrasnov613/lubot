@@ -82,7 +82,7 @@ export default function NukeWordsSettings() {
         <button
           type="submit"
           disabled={saving || !newWord.trim()}
-          className="absolute cursor-pointer right-0 top-1/2 -translate-y-1/2 rounded-r-xl px-4 py-2 border-highlight border-1 text-sm font-medium h-full bg-bg3 active:bg-twitch hover:bg-twitch/50 text-white disabled:border-0 disabled:bg-transparent disabled:opacity-60 disabled:cursor-not-allowed"
+          className="absolute right-0 top-1/2 -translate-y-1/2 rounded-r-xl px-4 py-2 border-highlight border-1 text-sm font-medium h-full bg-bg3 active:bg-twitch hover:bg-twitch/50 text-white disabled:border-0 disabled:bg-transparent disabled:opacity-60 disabled:cursor-not-allowed"
         >
           <Bomb />
         </button>

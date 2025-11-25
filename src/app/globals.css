@@ -15,6 +15,7 @@
   --warning: oklch(0.7 0.11 100);
   --success: oklch(0.7 0.11 160);
   --info: oklch(0.7 0.11 260);
+  --twitch: #9146ff;
 }
 
 @theme inline {
@@ -24,7 +25,7 @@
   --color-gradient: var(--gradient);
   --color-highlight: var(--highlight);
   --color-text: var(--text);
-  --color-twitch: #9146ff;
+  --color-twitch: var(--twitch);
   --color-muted: var(--text-muted);
   --color-border: var(--border);
   --color-success: var(--success);

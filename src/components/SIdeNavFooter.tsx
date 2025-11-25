@@ -28,7 +28,7 @@ export default function SideNavFooter({ slug }: { slug: string }) {
   }, [slug]);
 
   return (
-    <div className="h-[10%] flex justify-start ml-7 items-center gap-3 w-full mb-2">
+    <div className="h-[15%] flex justify-start items-center gap-3">
       {avatarUrl ? (
         <Image
           src={avatarUrl}

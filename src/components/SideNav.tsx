@@ -19,19 +19,21 @@ export default function SideNav() {
   );
 
   return (
-    <aside className="fixed bg-gradient-to-b from-bg2 to-bg3 min-w-60 h-screen flex flex-col justify-between items-start border-border border-r-1 overflow-hidden">
-      <div className="flex flex-col flex-1 gap-12 w-full">
-        <div className="flex items-center gap-5 border-b border-highlight p-2">
+    <aside className="fixed left-10 min-w-60 h-screen flex flex-col justify-between items-start py-5">
+      <div className="flex-1 flex flex-col justify-start items-start">
+        <div className="flex items-center gap-5">
           <Image src="/logo.png" width={72} height={72} alt="" />
-          <div className="text-twitch font-bold text-4xl">Lu.bot</div>
         </div>
 
-        <nav className="flex-1">
-          <ul className="flex flex-col cursor-pointer justify-start gap-2 items-stretch text-text h-full">
+        <nav className="rounded-full flex-1 flex flex-col items-start justify-center">
+          <ul className="flex flex-col items-start cursor-pointer gap-10 text-text h-1/2">
             {links.map(({ path, Icon, text }) => (
-              <li key={path} className="">
-                <NavLinkButton path={path} text={text} img={<Icon size={32}/> } />
-              </li>
+              <NavLinkButton
+                key={path}
+                path={path}
+                text={text}
+                img={<Icon size={32} />}
+              />
             ))}
           </ul>
         </nav>

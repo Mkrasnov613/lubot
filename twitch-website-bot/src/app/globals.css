@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+:root {
+  --bg-dark: oklch(0.1 0.055 305);
+  --bg: oklch(0.15 0.055 305);
+  --bg-light: oklch(0.2 0.055 305);
+  --text: oklch(0.96 0.1 305);
+  --text-muted: oklch(0.76 0.1 305);
+  --highlight: oklch(0.5 0.11 305);
+  --border: oklch(0.4 0.11 305);
+  --border-muted: oklch(0.3 0.11 305);
+  --primary: oklch(0.76 0.11 305);
+  --secondary: oklch(0.76 0.11 125);
+  --error: oklch(0.7 0.11 30);
+  --warning: oklch(0.7 0.11 100);
+  --success: oklch(0.7 0.11 160);
+  --info: oklch(0.7 0.11 260);
+  --twitch: #9146ff;
+}
+
+@theme inline {
+  --color-bg1: var(--bg-dark);
+  --color-bg2: var(--bg);
+  --color-bg3: var(--bg-light);
+  --color-gradient: var(--gradient);
+  --color-highlight: var(--highlight);
+  --color-text: var(--text);
+  --color-twitch: var(--twitch);
+  --color-muted: var(--text-muted);
+  --color-border: var(--border);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+}
+
+.toast-style {
+  background-color: var(--success);
+  border-radius: 25px;
+}
+
+.gradient-bg {
+  background-color: linear-gradient(0deg, var(--bg) 95%, var(--bg-light));
+}
+
+.shadow-large {
+  box-shadow: 0px 4px 4px #00000030, 0px 12px 12px #00000015;
+}
+
+.animate-spin-slow {
+  animation: spin 3.6s linear infinite;
+}
+
+body {
+  background: var(--bg-dark);
+  color: var(--text);
+}
+
+@layer utilities {
+  .scrollbar::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  .scrollbar::-webkit-scrollbar-track {
+    border-radius: 100vh;
+    background: none;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb {
+    background: var(--bg);
+    border-radius: 100vh;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--bg-light);
+  }
+}

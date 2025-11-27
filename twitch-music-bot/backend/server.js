@@ -1,0 +1,80 @@
+import dotenv from "dotenv";
+dotenv.config();
+
+import express from "express";
+import http from "http";
+import { Server } from "socket.io";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+
+import { APIRouter } from "./routes/api/player.js";
+import { dataTenantRouter } from "./routes/api/data-tenant.js";
+import { initPlayer, getState } from "./lib/player.js";
+
+import { startTokenScheduler } from "./utils/tokenScheduler.js";
+import { initDB } from "./utils/initDB.js";
+import { TwitchRouter } from "./routes/api/twitch.js";
+import { TwitchBotAuthRouter } from "./routes/auth-twitch-bot.js";
+import { TwitchAuthRouter } from "./routes/auth-twitch-broadcaster.js";
+import { BotRouter } from "./routes/api/bot.js";
+import { NukeRouter } from "./routes/api/nuke-word.js";
+
+const app = express();
+const server = http.createServer(app);
+
+const allowedOrigins = [
+  "http://localhost:3001",
+  process.env.FRONTEND_BASE_URL,
+].filter(Boolean);
+
+const corsOptions = {
+  credentials: true,
+  origin(origin, cb) {
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error(`Not allowed by CORS: ${origin}`));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+initDB();
+
+app.use(cors(corsOptions));
+export const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3001",
+    credentials: true,
+  },
+});
+
+initPlayer(io);
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static("backend"));
+app.use(cookieParser());
+app.use("/api/twitch", TwitchRouter);
+app.use("/api/bot", BotRouter);
+app.use("/api/nuke-words", NukeRouter)
+app.use("/api/player", APIRouter);
+app.use("/api/data", dataTenantRouter);
+app.use("/auth/twitch", TwitchAuthRouter);
+app.use("/auth/twitch-bot", TwitchBotAuthRouter);
+
+io.on("connection", (socket) => {
+  const { QUEUE, nowPlaying } = getState();
+  socket.emit("queue:update", { queue: QUEUE, nowPlaying });
+});
+
+io.of("/eventsub").on("connection", (socket) => {
+  console.log("EventSub UI client connected", socket.id);
+});
+
+const stopScheduler = startTokenScheduler();
+process.on("SIGINT", () => {
+  stopScheduler();
+  process.exit(0);
+});
+
+const PORT = 3000;
+server.listen(PORT, () => console.log(`http://localhost:${PORT}`));

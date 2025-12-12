@@ -7,6 +7,11 @@ export const dataTenantRouter = Router();
 dataTenantRouter.get("/tenant", requireAuth, (req, res) => {
   const query = req.query.data;
   const twitchUserID = req.user.sid;
+
+  if (query === "tenant_id") {
+    return res.send(twitchUserID);
+  }
+
   if (query === "slug") {
     const slug = db
       .prepare(`SELECT slug FROM tenants WHERE twitch_user_id = ?`)

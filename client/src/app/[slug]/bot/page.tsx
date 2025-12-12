@@ -8,7 +8,7 @@ export default async function BotPage({
   const { slug } = await params;
   // ─── UI ───
   return (
-    <div className="flex items-center min-h-screen justify-center px-4 py-8 bg-bg1">
+    <div className="flex items-center  justify-center px-4 py-8 bg-bg1">
       <NukeWordsSettings />
     </div>
   );

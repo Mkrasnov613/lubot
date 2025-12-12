@@ -14,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`antialiased text-white ${tajawal.className}`}>
+      <body className={`antialiased text-white `}>
         {children}
         <Toaster />
       </body>

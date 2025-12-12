@@ -55,15 +55,15 @@ export default async function TwitchChannelComponent({
       const json = await res.json();
 
       return { ok: true as const, message: json.message || "Updated" };
-    } catch (e: any) {
-      return { ok: false as const, message: e?.message || "Network error" };
+    } catch (e: unknown) {
+      return { ok: false as const, message: e instanceof Error ? e.message : "Network error" };
     } finally {
       revalidatePath(`/dashboard/${slug}`);
     }
   }
 
   return (
-    <article className="flex flex-col gap-5 min-h-[510px] min-w-[1050px] max-w-[1050px] p-5 shadow-large bg-gradient-to-b from-bg3 to-5% to-bg2 border-1 border-border border-t-highlight rounded-2xl self-end">
+    <article className="flex flex-col gap-5 min-h-[400px] min-w-[520px] p-5 shadow-large bg-gradient-to-b from-bg3 to-5% to-bg2 border-1 border-border border-t-highlight rounded-2xl self-start">
       <div className="flex items-center">
         <Suspense fallback={""}>
           <TwitchPlayer slug={slug} />

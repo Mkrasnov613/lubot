@@ -1,21 +1,26 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import getSocket from "@/lib/socket";
 import type { QueueUpdate, Track } from "@/types/musicPlayer";
 
-export function useQueue() {
-  const [queue, setQueue] = useState<Track[]>([]);
-  const [nowPlaying, setNowPlaying] = useState<Track | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+export function useQueue(initialQueue: Track[] = [], initialNowPlaying: Track | null = null, tenantId: string | null) {
+
+  const [queue, setQueue] = useState<Track[]>(initialQueue);
+  const [nowPlaying, setNowPlaying] = useState<Track | null>(initialNowPlaying);
+  const [isPlaying, setIsPlaying] = useState(Boolean(initialNowPlaying));
   const [positionSec, setPosition] = useState(0);
-  const [durationSec, setDuration] = useState(0);
+  const [durationSec, setDuration] = useState(initialNowPlaying?.durationSec || 0);
 
   useEffect(() => {
-    const server = getSocket();
+    if (!tenantId) return;
+    
+    const server = getSocket(tenantId as string);
 
     const onQueueUpdate = ({ queue, nowPlaying }: QueueUpdate) => {
       setQueue(queue);
       setNowPlaying(nowPlaying || null);
-      setIsPlaying(Boolean(nowPlaying)); 
+      setIsPlaying(Boolean(nowPlaying));
       if (nowPlaying?.durationSec) setDuration(nowPlaying.durationSec);
     };
 
@@ -27,7 +32,6 @@ export function useQueue() {
 
     const onPlayerPause = () => setIsPlaying(false);
 
-    // Optional progress event from server
     const onPlayerProgress = ({
       positionSec,
       durationSec,
@@ -50,9 +54,8 @@ export function useQueue() {
       server.off("player:pause", onPlayerPause);
       server.off("player:progress", onPlayerProgress);
     };
-  }, []);
+  }, [tenantId]);
 
-  // Fallback local progress timer if server doesn't emit progress
   useEffect(() => {
     if (!isPlaying) return;
     const id = setInterval(() => {

@@ -2,15 +2,26 @@ import ytSearch from "yt-search";
 import { validateTrackCandidate } from "./validation.js";
 
 let ioRef = null;
-let QUEUE = [];
-let nowPlaying = null;
+const stateByTenant = new Map();
+
+export function roomName(tenantId) {
+  return `tenant:${tenantId}`;
+}
+
+function ensureTenantState(tenantId) {
+  if (!tenantId) throw new Error("Missing tenantId in player");
+  if (!stateByTenant.has(tenantId)) {
+    stateByTenant.set(tenantId, { QUEUE: [], nowPlaying: null });
+  }
+  return stateByTenant.get(tenantId);
+}
 
 export function initPlayer(io) {
   ioRef = io;
 }
 
-export function getState() {
-  return { QUEUE, nowPlaying };
+export function getState(tenantId) {
+  return ensureTenantState(tenantId);
 }
 
 export async function resolveTrack(query, requester) {
@@ -35,20 +46,32 @@ export async function resolveTrack(query, requester) {
   };
 }
 
-export function enqueue(track) {
-  QUEUE.push(track);
-  if (ioRef) ioRef.emit("queue:update", { queue: QUEUE, nowPlaying });
-}
-
-export function playNext() {
-  nowPlaying = QUEUE.shift() || null;
+export function enqueue(tenantId, track) {
+  const tenantState = ensureTenantState(tenantId);
+  tenantState.QUEUE.push(track);
   if (ioRef) {
-    ioRef.emit("player:play", { track: nowPlaying });
-    ioRef.emit("queue:update", { queue: QUEUE, nowPlaying });
+    ioRef.to(roomName(tenantId)).emit("queue:update", {
+      queue: tenantState.QUEUE,
+      nowPlaying: tenantState.nowPlaying,
+    });
   }
-  return nowPlaying;
 }
 
-export function skip() {
-  return playNext();
+export function playNext(tenantId) {
+  const tenantState = ensureTenantState(tenantId);
+  tenantState.nowPlaying = tenantState.QUEUE.shift() || null;
+  if (ioRef) {
+    ioRef.to(roomName(tenantId)).emit("player:play", {
+      track: tenantState.nowPlaying,
+    });
+    ioRef.to(roomName(tenantId)).emit("queue:update", {
+      queue: tenantState.QUEUE,
+      nowPlaying: tenantState.nowPlaying,
+    });
+  }
+  return tenantState.nowPlaying;
+}
+
+export function skip(tenantId) {
+  return playNext(tenantId);
 }

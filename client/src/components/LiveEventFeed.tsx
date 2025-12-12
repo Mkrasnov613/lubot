@@ -4,7 +4,7 @@ import { io, Socket } from "socket.io-client";
 import { pushActivityItem } from "@/lib/liveEvent";
 import Image from "next/image";
 import { timeAgo } from "@/lib/utils";
-import { ActivityItem } from "@/app/[slug]/dashboard/page";
+import { ActivityItem } from "@/components/ActivityFeedComponent";
 type EventSubPayload =
   | {
       type: "channel.follow";
@@ -85,8 +85,8 @@ export default function LiveEventFeed({
   }, [socketUrl]);
 
   return (
-    <div className="rounded-xl p-3 overflow-x-scroll w-full scroll-smooth scrollbar">
-      <ul className="flex gap-4 items-center">
+    <div className="flex rounded-xl p-3 mb-4 w-110 h-125 scroll-smooth overflow-x-hidden scrollbar ">
+      <ul className="flex flex-col gap-5 items-center">
         {items.map((item) => (
           <li
             key={item.id}

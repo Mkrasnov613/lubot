@@ -49,8 +49,6 @@ export function invalidateNukeCache(broadcasterId) {
 export async function enableBot(tenantId) {
   if (conns.has(tenantId)) return;
 
-  const BOT_LOGIN = process.env.LUBOT_BOT_NAME || "";
-
   const botToken = await getBotAccessToken();
   const twitchToken = await refreshTokenRow(tenantId);
 
@@ -149,8 +147,9 @@ export async function enableBot(tenantId) {
       }
       try {
         const track = await resolveTrack(q, username);
-        enqueue(track);
-        if (!getState().nowPlaying) playNext();
+        enqueue(tenantId, track);
+        const { nowPlaying } = getState(tenantId);
+        if (!nowPlaying) playNext(tenantId);
         client.say(channel, `Додано: ${track.title} (заявка від @${username})`);
       } catch (e) {
         const msg = e?.message || String(e);
@@ -159,12 +158,12 @@ export async function enableBot(tenantId) {
     }
 
     if (cmd === "!skip" && isMod) {
-      skip();
+      skip(tenantId);
       client.say(channel, `⏭️ Пропущено. Наступний трек...`);
     }
 
     if (cmd === "!song") {
-      const { nowPlaying } = getState();
+      const { nowPlaying } = getState(tenantId);
       if (nowPlaying) {
         client.say(
           channel,
@@ -176,7 +175,7 @@ export async function enableBot(tenantId) {
     }
 
     if (cmd === "!queue") {
-      const { QUEUE } = getState();
+      const { QUEUE } = getState(tenantId);
       if (QUEUE.length === 0) client.say(channel, `Черга порожня.`);
       else client.say(channel, `У черзі ${QUEUE.length} трек(ів).`);
     }

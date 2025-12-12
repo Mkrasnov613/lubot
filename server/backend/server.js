@@ -9,7 +9,7 @@ import cookieParser from "cookie-parser";
 
 import { APIRouter } from "./routes/api/player.js";
 import { dataTenantRouter } from "./routes/api/data-tenant.js";
-import { initPlayer, getState } from "./lib/player.js";
+import { initPlayer, getState, roomName } from "./lib/player.js";
 
 import { startTokenScheduler } from "./utils/tokenScheduler.js";
 import { initDB } from "./utils/initDB.js";
@@ -55,14 +55,28 @@ app.use(express.static("backend"));
 app.use(cookieParser());
 app.use("/api/twitch", TwitchRouter);
 app.use("/api/bot", BotRouter);
-app.use("/api/nuke-words", NukeRouter)
+app.use("/api/nuke-words", NukeRouter);
 app.use("/api/player", APIRouter);
 app.use("/api/data", dataTenantRouter);
 app.use("/auth/twitch", TwitchAuthRouter);
 app.use("/auth/twitch-bot", TwitchBotAuthRouter);
 
 io.on("connection", (socket) => {
-  const { QUEUE, nowPlaying } = getState();
+  const tenantId =
+    socket.handshake.auth?.tenantId || socket.handshake.query?.tenantId;
+
+  if (!tenantId) {
+    console.warn("Socket without tenantId, disconnecting", socket.id);
+    socket.disconnect();
+    return;
+  }
+
+  const room = roomName(tenantId);
+  socket.join(room);
+
+  console.log("Socket connected", socket.id, "tenant=", tenantId);
+
+  const { QUEUE, nowPlaying } = getState(tenantId);
   socket.emit("queue:update", { queue: QUEUE, nowPlaying });
 });
 

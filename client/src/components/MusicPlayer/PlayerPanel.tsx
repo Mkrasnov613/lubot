@@ -1,9 +1,8 @@
-import QueuePanel from "@/components/MusicPlayer/QueuePanel";
-import PlayerPanel from "@/components/MusicPlayer/PlayerPanel";
-import { cookies } from "next/headers";
-import SearchOverlay from "@/components/MusicPlayer/SearchOverlay";
 
-export default async function MusicPage() {
+import PlayerBar from "./PlayerBar";
+import { cookies } from "next/headers";
+
+export default async function PlayerPanel() {
   const cookieHeader = (await cookies()).toString();
   let tenantId: string | null = null;
 
@@ -21,10 +20,8 @@ export default async function MusicPage() {
       const data = await res.json();
       tenantId = data.tenantId || data || null;
     }
-  } catch {
-  }
+  } catch {}
 
-  // If tenantId is not available, return early or show error
   if (!tenantId) {
     return (
       <section className="flex flex-wrap justify-around gap-5 items-center min-h-screen mx-auto max-w-[1680px] p-10 text-[var(--color-text)] bg-bg1">
@@ -47,26 +44,14 @@ export default async function MusicPage() {
   } catch {
     // Silently fail - WebSocket will provide state on connect
   }
-
   return (
-    <section className="relative flex flex-wrap justify-around gap-5 items-center min-h-screen mx-auto max-w-[1680px] p-10 text-[var(--color-text)] bg-bg1">
-      <div className="w-[700px]">
-        <PlayerPanel
-          initialQueue={initialPlayerState.queue}
-          initialNowPlaying={initialPlayerState.nowPlaying}
-          tenantId={tenantId}
-        />
-      </div>
-      <div className="">
-        <QueuePanel
-          initialQueue={initialPlayerState.queue}
-          initialNowPlaying={initialPlayerState.nowPlaying}
-          tenantId={tenantId}
-        />
-      </div>
-      <div className="absolute top-0 z-100">
-        <SearchOverlay />
-      </div>
-    </section>
+    <div className="flex items-center justify-center gap-4 bg-bg2 h-23 rounded-xl w-full mb-5">
+      {/* PLAYER */}
+      <PlayerBar
+        initialQueue={initialPlayerState.queue}
+        initialNowPlaying={initialPlayerState.nowPlaying}
+        tenantId={tenantId}
+      />
+    </div>
   );
 }

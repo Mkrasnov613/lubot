@@ -9,6 +9,11 @@ lerna-debug.log*
 
 .env
 
+# SQLite database (contains live OAuth tokens)
+*.db
+*.db-shm
+*.db-wal
+
 node_modules
 dist
 dist-ssr

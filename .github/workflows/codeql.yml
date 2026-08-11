@@ -2,9 +2,9 @@ name: "CodeQL"
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "dev"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "dev"]
   schedule:
     # Runs every Monday at 06:00 UTC so scanning isn't only tied to pushes/PRs.
     - cron: "0 6 * * 1"

@@ -5,7 +5,7 @@
   "fixed": [["twitch-website-bot", "twitch-music-bot"]],
   "linked": [],
   "access": "restricted",
-  "baseBranch": "main",
+  "baseBranch": "dev",
   "updateInternalDependencies": "patch",
   "ignore": []
 }

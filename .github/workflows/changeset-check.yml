@@ -2,7 +2,7 @@ name: Changeset Check
 
 on:
   pull_request:
-    branches: ["main"]
+    branches: ["dev"]
 
 jobs:
   check:
@@ -19,4 +19,4 @@ jobs:
 
       - run: npm ci
 
-      - run: npx changeset status --since=origin/main
+      - run: npx changeset status --since=origin/dev

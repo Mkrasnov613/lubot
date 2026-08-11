@@ -6,6 +6,7 @@ import http from "http";
 import { Server } from "socket.io";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { createRequire } from "module";
 
 import { APIRouter } from "./routes/api/player.js";
 import { dataTenantRouter } from "./routes/api/data-tenant.js";
@@ -18,6 +19,9 @@ import { TwitchBotAuthRouter } from "./routes/auth-twitch-bot.js";
 import { TwitchAuthRouter } from "./routes/auth-twitch-broadcaster.js";
 import { BotRouter } from "./routes/api/bot.js";
 import { NukeRouter } from "./routes/api/nuke-word.js";
+
+const require = createRequire(import.meta.url);
+const pkg = require("../package.json");
 
 const app = express();
 const server = http.createServer(app);
@@ -60,6 +64,10 @@ app.use("/api/player", APIRouter);
 app.use("/api/data", dataTenantRouter);
 app.use("/auth/twitch", TwitchAuthRouter);
 app.use("/auth/twitch-bot", TwitchBotAuthRouter);
+
+app.get("/version", (_req, res) => {
+  res.json({ version: pkg.version, commit: process.env.GIT_SHA || "dev" });
+});
 
 io.on("connection", (socket) => {
   const tenantId =

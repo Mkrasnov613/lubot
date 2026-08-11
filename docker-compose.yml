@@ -3,8 +3,10 @@ version: '3.8'
 services:
   server:
     build:
-      context: ./server
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: server/Dockerfile
+      args:
+        GIT_SHA: ${GIT_SHA:-dev}
     container_name: lubot-server
     ports:
       - "3000:3000"
@@ -19,5 +21,5 @@ services:
       - LUBOT_REFRESH_TOKEN=${LUBOT_REFRESH_TOKEN}
       - JSON_WEB_TOKEN=${JSON_WEB_TOKEN}
     volumes:
-      - ./server/data:/app/data
+      - ./server/data:/app/server/data
     restart: unless-stopped

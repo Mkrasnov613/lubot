@@ -1,7 +1,7 @@
 {
   "name": "twitch-music-bot",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "node --watch backend/server.js",

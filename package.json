@@ -1,0 +1,16 @@
+{
+  "name": "lubot",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "changeset": "changeset",
+    "version:packages": "changeset version && npm install",
+    "tag:release": "changeset tag"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.31.1"
+  }
+}

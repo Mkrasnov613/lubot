@@ -1,7 +1,7 @@
-node_modules
+**/node_modules
 npm-debug.log*
 
-data
+server/data
 *.db
 *.db-shm
 *.db-wal
@@ -9,5 +9,8 @@ data
 .env
 .git
 .gitignore
+
+client/.next
+client/out
 
 *.md

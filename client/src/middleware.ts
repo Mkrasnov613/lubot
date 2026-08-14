@@ -8,7 +8,7 @@ export function middleware(req: NextRequest) {
       req.nextUrl.pathname.includes("/bot")) &&
     !sid
   ) {
-    return NextResponse.redirect("http://localhost:3001");
+    return NextResponse.redirect(new URL("/", req.url));
   }
   return NextResponse.next();
 }

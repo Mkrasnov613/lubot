@@ -5,6 +5,7 @@ import { pushActivityItem } from "@/lib/liveEvent";
 import Image from "next/image";
 import { timeAgo } from "@/lib/utils";
 import { ActivityItem } from "@/components/ActivityFeedComponent";
+import { API_BASE_URL } from "@/lib/config";
 type EventSubPayload =
   | {
       type: "channel.follow";
@@ -34,7 +35,7 @@ export default function LiveEventFeed({
 }) {
   const [items, setItems] = useState<ActivityItem[]>(initialData);
 
-  const socketUrl = useMemo(() => "http://localhost:3000", []);
+  const socketUrl = useMemo(() => API_BASE_URL, []);
 
   useEffect(() => {
     const socket: Socket = io(`${socketUrl}/eventsub`, {

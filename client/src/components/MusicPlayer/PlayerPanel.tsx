@@ -1,6 +1,7 @@
 
 import PlayerBar from "./PlayerBar";
 import { cookies } from "next/headers";
+import { API_BASE_URL } from "@/lib/config";
 
 export default async function PlayerPanel() {
   const cookieHeader = (await cookies()).toString();
@@ -8,7 +9,7 @@ export default async function PlayerPanel() {
 
   try {
     const res = await fetch(
-      "http://localhost:3000/api/data/tenant?data=tenant_id",
+      `${API_BASE_URL}/api/data/tenant?data=tenant_id`,
       {
         headers: { cookie: cookieHeader },
         cache: "no-store",
@@ -34,7 +35,7 @@ export default async function PlayerPanel() {
 
   let initialPlayerState = { queue: [], nowPlaying: null };
   try {
-    const playerRes = await fetch("http://localhost:3000/api/player/state", {
+    const playerRes = await fetch(`${API_BASE_URL}/api/player/state`, {
       headers: { cookie: cookieHeader },
       cache: "no-store",
     });

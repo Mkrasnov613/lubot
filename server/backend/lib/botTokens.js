@@ -7,18 +7,7 @@ const TWITCH_CLIENT_SECRET = (process.env.TWITCH_CLIENT_SECRET || "").trim();
 const SEED_ACCESS = process.env.LUBOT_OAUTH_TOKEN || "";
 const SEED_REFRESH = process.env.LUBOT_REFRESH_TOKEN || "";
 
-db.prepare(
-  `
-  CREATE TABLE IF NOT EXISTS lubot_tokens (
-    id TEXT PRIMARY KEY,
-    access_token TEXT NOT NULL,
-    refresh_token TEXT NOT NULL,
-    access_expires_at TEXT NOT NULL,
-    scope TEXT
-  );
-`
-).run();
-
+// Schema owned by utils/initDB.js — see the lubot_tokens table there.
 export function getBotRow() {
   return db.prepare(`SELECT * FROM lubot_tokens WHERE id = 'global'`).get();
 }

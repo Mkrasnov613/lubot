@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { API_BASE_URL } from "@/lib/config";
 
 export default function Home() {
   return (
@@ -29,7 +30,7 @@ export default function Home() {
             more
           </p>
           <Link
-            href="http://localhost:3000/auth/twitch/login"
+            href={`${API_BASE_URL}/auth/twitch/login`}
             className="flex bg-[#9146FF] h-13 w-56 rounded-xl text-text font-semibold items-center justify-around"
           >
             <Image src="/twitch.png" width={32} height={32} alt="" />

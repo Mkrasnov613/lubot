@@ -9,6 +9,7 @@ import { useQueue } from "@/hooks/useQueue";
 import { showToast } from "@/lib/toast";
 import SearchOverlay from "./SearchOverlay";
 import QueuePanel from "./QueuePanel";
+import { API_BASE_URL } from "@/lib/config";
 
 type YouTubePlayer = {
   getIframe?: () => HTMLIFrameElement | null;
@@ -189,9 +190,9 @@ export default function PlayerBar({
               console.log("[YT] Video ended, triggering next track");
               if (!nextTrackTriggeredRef.current) {
                 nextTrackTriggeredRef.current = true;
-                fetch("http://localhost:3000/api/player/next", {
+                fetch(`${API_BASE_URL}/api/player/next`, {
                   method: "POST",
-                  headers: { "x-player-secret": "lutikmojlubimyj" },
+                  credentials: "include",
                 }).catch(() => {});
               }
             }
@@ -355,9 +356,9 @@ export default function PlayerBar({
             "[YT] Detected ENDED state from progress poll, triggering next track"
           );
           nextTrackTriggeredRef.current = true;
-          fetch("http://localhost:3000/api/player/next", {
+          fetch(`${API_BASE_URL}/api/player/next`, {
             method: "POST",
-            headers: { "x-player-secret": "lutikmojlubimyj" },
+            credentials: "include",
           }).catch(() => {});
           return;
         }
@@ -379,9 +380,9 @@ export default function PlayerBar({
             }
           );
           nextTrackTriggeredRef.current = true;
-          fetch("http://localhost:3000/api/player/next", {
+          fetch(`${API_BASE_URL}/api/player/next`, {
             method: "POST",
-            headers: { "x-player-secret": "lutikmojlubimyj" },
+            credentials: "include",
           }).catch(() => {});
         }
       } catch {}
@@ -447,10 +448,9 @@ export default function PlayerBar({
 
   async function nextTrack() {
     try {
-      await fetch("http://localhost:3000/api/player/next", {
+      await fetch(`${API_BASE_URL}/api/player/next`, {
         method: "POST",
         credentials: "include",
-        headers: { "x-player-secret": "lutikmojlubimyj" },
       });
     } catch {}
   }

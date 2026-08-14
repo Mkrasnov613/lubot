@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { showToast } from "@/lib/toast";
+import { API_BASE_URL } from "@/lib/config";
 
 type Props = {
   initialTitle: string;
@@ -49,7 +50,7 @@ export default function EditStreamMeta({
     controllerRef.current = ac;
 
     fetch(
-      `http://localhost:3000/api/twitch/search/categories?category=${encodeURIComponent(
+      `${API_BASE_URL}/api/twitch/search/categories?category=${encodeURIComponent(
         q
       )}`,
       {

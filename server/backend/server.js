@@ -1,5 +1,4 @@
-import dotenv from "dotenv";
-dotenv.config();
+import "./env.js";
 
 import express from "express";
 import http from "http";
@@ -46,7 +45,10 @@ initDB();
 app.use(cors(corsOptions));
 export const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3001",
+    origin(origin, cb) {
+      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error(`Not allowed by CORS: ${origin}`));
+    },
     credentials: true,
   },
 });

@@ -2,6 +2,7 @@ import QueuePanel from "@/components/MusicPlayer/QueuePanel";
 import PlayerPanel from "@/components/MusicPlayer/PlayerPanel";
 import { cookies } from "next/headers";
 import SearchOverlay from "@/components/MusicPlayer/SearchOverlay";
+import { API_BASE_URL } from "@/lib/config";
 
 export default async function MusicPage() {
   const cookieHeader = (await cookies()).toString();
@@ -9,7 +10,7 @@ export default async function MusicPage() {
 
   try {
     const res = await fetch(
-      "http://localhost:3000/api/data/tenant?data=tenant_id",
+      `${API_BASE_URL}/api/data/tenant?data=tenant_id`,
       {
         headers: { cookie: cookieHeader },
         cache: "no-store",
@@ -37,7 +38,7 @@ export default async function MusicPage() {
 
   let initialPlayerState = { queue: [], nowPlaying: null };
   try {
-    const playerRes = await fetch("http://localhost:3000/api/player/state", {
+    const playerRes = await fetch(`${API_BASE_URL}/api/player/state`, {
       headers: { cookie: cookieHeader },
       cache: "no-store",
     });

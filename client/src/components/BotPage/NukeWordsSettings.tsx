@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Bomb } from "lucide-react";
+import { API_BASE_URL } from "@/lib/config";
 
 type NukeWord = {
   id: number;
@@ -19,7 +20,7 @@ export default function NukeWordsSettings() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/nuke-words", {
+        const res = await fetch(`${API_BASE_URL}/api/nuke-words`, {
           cache: "no-store",
           credentials: "include",
         });
@@ -37,7 +38,7 @@ export default function NukeWordsSettings() {
 
     setSaving(true);
     try {
-      const res = await fetch("http://localhost:3000/api/nuke-words", {
+      const res = await fetch(`${API_BASE_URL}/api/nuke-words`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -57,7 +58,7 @@ export default function NukeWordsSettings() {
     const prev = words;
     setWords((w) => w.filter((x) => x.id !== id));
     try {
-      const res = await fetch(`http://localhost:3000/api/nuke-words/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/nuke-words/${id}`, {
         method: "DELETE",
         credentials: "include",
       });

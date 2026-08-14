@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { API_BASE_URL } from "@/lib/config";
 
 export default function SideNavFooter({ slug }: { slug: string }) {
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -11,7 +12,7 @@ export default function SideNavFooter({ slug }: { slug: string }) {
     (async () => {
       try {
         const res = await fetch(
-          "http://localhost:3000/api/data/tenant?data=avatar_url",
+          `${API_BASE_URL}/api/data/tenant?data=avatar_url`,
           { cache: "no-store", credentials: "include" }
         );
         if (!res.ok) throw new Error(await res.text());

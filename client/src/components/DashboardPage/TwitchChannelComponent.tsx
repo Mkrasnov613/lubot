@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import Image from "next/image";
 import EditStreamMeta from "./EditStreamMeta";
 import { revalidatePath } from "next/cache";
+import { API_BASE_URL } from "@/lib/config";
 
 export default async function TwitchChannelComponent({
   slug,
@@ -12,7 +13,7 @@ export default async function TwitchChannelComponent({
 }) {
   const cookieHeader = (await cookies()).toString();
 
-  const channelRes = await fetch("http://localhost:3000/api/twitch/channel", {
+  const channelRes = await fetch(`${API_BASE_URL}/api/twitch/channel`, {
     cache: "no-cache",
     headers: { cookie: cookieHeader },
   });
@@ -20,7 +21,7 @@ export default async function TwitchChannelComponent({
 
   // initial game art render
   const artRes = await fetch(
-    `http://localhost:3000/api/twitch/game-art?id=${encodeURIComponent(
+    `${API_BASE_URL}/api/twitch/game-art?id=${encodeURIComponent(
       channel?.game_id ?? ""
     )}`,
     {
@@ -40,7 +41,7 @@ export default async function TwitchChannelComponent({
 
     try {
       const res = await fetch(
-        "http://localhost:3000/api/twitch/channel/update",
+        `${API_BASE_URL}/api/twitch/channel/update`,
         {
           method: "POST",
           headers: {

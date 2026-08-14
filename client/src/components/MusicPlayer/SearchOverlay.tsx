@@ -5,6 +5,7 @@ import type { SearchItem } from "@/types/SearchItem";
 import Image from "next/image";
 import { formatMin } from "@/lib/utils";
 import { Search } from "lucide-react";
+import { API_BASE_URL } from "@/lib/config";
 
 export default function SearchOverlay({ onClose }: { onClose?: () => void }) {
   const [query, setQuery] = useState("");
@@ -50,7 +51,7 @@ export default function SearchOverlay({ onClose }: { onClose?: () => void }) {
 
   async function enqueueVideo(videoId: string) {
     try {
-      const res = await fetch(`http://localhost:3000/api/player/enqueue`, {
+      const res = await fetch(`${API_BASE_URL}/api/player/enqueue`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

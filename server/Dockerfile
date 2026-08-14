@@ -10,10 +10,8 @@ RUN apk add --no-cache python3 make g++ sqlite
 
 COPY package.json package-lock.json ./
 COPY client/package.json ./client/package.json
-COPY server/package.json ./server/package.json
-RUN npm ci --omit=dev --workspace=server --include-workspace-root
-
 COPY server ./server
+RUN npm ci --omit=dev --workspace=server --include-workspace-root
 
 RUN mkdir -p /app/server/data && chown -R node:node /app
 

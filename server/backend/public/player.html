@@ -56,12 +56,8 @@
   </div>
 
   <script>
-    
-    localStorage.setItem('PLAYER_SECRET', 'lutikmojlubimyj');
-
     let socket, player, current;
 
-    // Підключаємо YT API
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     document.head.appendChild(tag);
@@ -99,7 +95,6 @@
         subEl.textContent   = `заявка від ${track.requester}`;
         rightEl.textContent = 'playing';
 
-        // обкладинка
         thumbEl.src = id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : '';
 
         if (!id || id.length !== 11) {
@@ -107,7 +102,6 @@
           return;
         }
 
-        // OBS autoplay hack: mute -> play -> unmute
         try{
           player.loadVideoById(id);
           player.mute(); player.playVideo();
@@ -126,10 +120,7 @@
     function notifyNext(){
       fetch('/api/next', {
         method:'POST',
-        headers:{
-          'Content-Type':'application/json',
-          'x-player-secret': localStorage.getItem('PLAYER_SECRET') || ''
-        },
+        headers:{ 'Content-Type':'application/json' },
         body:'{}'
       }).catch(()=>{});
     }

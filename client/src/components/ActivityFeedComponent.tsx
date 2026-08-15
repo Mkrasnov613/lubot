@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import LiveEventFeed from "./LiveEventFeed";
 import LiveEventFeedSkeleton from "./LiveEventFeedSkeleton";
@@ -24,6 +25,10 @@ export default async function ActivityFeedComponent() {
       headers: { cookie: cookieHeader },
     }
   );
+
+  if (followersResponse.status === 401) {
+    redirect("/");
+  }
 
   if (!followersResponse.ok) {
     const txt = await followersResponse.text();

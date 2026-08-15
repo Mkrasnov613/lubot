@@ -22,12 +22,12 @@ export default async function TwitchChannelComponent({
   // initial game art render
   const artRes = await fetch(
     `${API_BASE_URL}/api/twitch/game-art?id=${encodeURIComponent(
-      channel?.game_id ?? ""
+      channel?.game_id ?? "",
     )}`,
     {
       cache: "no-cache",
       headers: { cookie: cookieHeader },
-    }
+    },
   );
   const { boxArtUrl } = await artRes.json();
 
@@ -35,29 +35,29 @@ export default async function TwitchChannelComponent({
     "use server";
 
     const title = formData.get("title")?.toString() ?? "";
-    const gameId = formData.get("gameId")?.toString() ?? channel.game_id;
+    const gameId = formData.get("gameId")?.toString() ?? channel?.game_id;
 
     const cookieHeaderInner = (await cookies()).toString();
 
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/twitch/channel/update`,
-        {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-            cookie: cookieHeaderInner,
-          },
-          body: JSON.stringify({ title, gameId }),
-          cache: "no-cache",
-        }
-      );
+      const res = await fetch(`${API_BASE_URL}/api/twitch/channel/update`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          cookie: cookieHeaderInner,
+        },
+        body: JSON.stringify({ title, gameId }),
+        cache: "no-cache",
+      });
 
       const json = await res.json();
 
       return { ok: true as const, message: json.message || "Updated" };
     } catch (e: unknown) {
-      return { ok: false as const, message: e instanceof Error ? e.message : "Network error" };
+      return {
+        ok: false as const,
+        message: e instanceof Error ? e.message : "Network error",
+      };
     } finally {
       revalidatePath(`/dashboard/${slug}`);
     }

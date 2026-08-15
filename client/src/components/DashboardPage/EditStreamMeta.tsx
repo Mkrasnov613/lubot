@@ -51,13 +51,13 @@ export default function EditStreamMeta({
 
     fetch(
       `${API_BASE_URL}/api/twitch/search/categories?category=${encodeURIComponent(
-        q
+        q,
       )}`,
       {
         signal: ac.signal,
         cache: "no-store",
         credentials: "include",
-      }
+      },
     )
       .then(async (r) => (r.ok ? r.json() : Promise.reject(await r.text())))
       .then((json) => {
@@ -120,7 +120,7 @@ export default function EditStreamMeta({
         showToast({
           status: "success",
           title: "The stream's info was successfully updated",
-          description: `${title} — ${gameName} `
+          description: `${title} — ${gameName} `,
         });
         setEditing(false);
       } else {

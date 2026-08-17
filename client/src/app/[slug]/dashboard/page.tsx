@@ -1,8 +1,8 @@
-import TwitchChannelComponent from "@/components/DashboardPage/TwitchChannelComponent";
+import TwitchChannelComponent from "@/app/[slug]/dashboard/components/TwitchChannelComponent";
 import { Suspense } from "react";
-import TwitchChat from "@/components/DashboardPage/TwitchChat";
-import TwitchChannelComponentSkeleton from "@/components/DashboardPage/TwitchChannelComponentSkeleton";
-import TwitchChatSkeleton from "@/components/DashboardPage/TwitchChatSkeleton";
+import TwitchChat from "@/app/[slug]/dashboard/components/TwitchChat";
+import TwitchChannelComponentSkeleton from "@/app/[slug]/dashboard/components/TwitchChannelComponentSkeleton";
+import TwitchChatSkeleton from "@/app/[slug]/dashboard/components/TwitchChatSkeleton";
 import { Flex } from "@chakra-ui/react";
 
 type DashboardPageProps = {

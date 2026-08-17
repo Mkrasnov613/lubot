@@ -1,5 +1,5 @@
-import NukeWordsSettings from "@/components/BotPage/NukeWordsSettings";
-import BotConnectionWindow from "@/components/BotPage/BotConnectionWindow";
+import NukeWordsSettings from "@/app/[slug]/bot/components/NukeWordsSettings";
+import BotConnectionWindow from "@/app/[slug]/bot/components/BotConnectionWindow";
 import { Flex } from "@chakra-ui/react";
 
 export default async function BotPage({

@@ -1,4 +1,4 @@
-import { db } from "../db.js";
+import { db } from "./connection.js";
 
 export function initDB() {
   const schema = `
@@ -19,7 +19,7 @@ export function initDB() {
   );
 
   -- id is always the literal string 'global': one shared bot account for
-  -- the whole deployment (see lib/botTokens.js), not one row per tenant.
+  -- the whole deployment (see utils/tokens/bot.js), not one row per tenant.
   CREATE TABLE IF NOT EXISTS lubot_tokens (
     id TEXT PRIMARY KEY,
     access_token TEXT NOT NULL,

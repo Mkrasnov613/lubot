@@ -1,4 +1,4 @@
-import { db } from "../db.js";
+import { db } from "../../db/connection.js";
 import axios from "axios";
 
 const TWITCH_CLIENT_ID = (process.env.TWITCH_CLIENT_ID || "").trim();

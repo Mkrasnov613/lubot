@@ -1,5 +1,5 @@
-import { db } from "../db.js";
-import { refreshTokenRow, isExpiredOrSoon } from "../lib/twitchTokens.js";
+import { db } from "../db/connection.js";
+import { refreshTokenRow, isExpiredOrSoon } from "./tokens/broadcaster.js";
 
 const TABLES = ["twitch_tokens"]; 
 

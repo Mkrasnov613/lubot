@@ -1,6 +1,6 @@
 import { Router } from "express";
 import axios from "axios";
-import { saveBotRow } from "../lib/botTokens.js";
+import { saveBotRow } from "../../utils/tokens/bot.js";
 
 export const TwitchBotAuthRouter = Router();
 

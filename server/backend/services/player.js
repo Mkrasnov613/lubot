@@ -1,5 +1,5 @@
 import ytSearch from "yt-search";
-import { validateTrackCandidate } from "./validation.js";
+import { validateTrackCandidate } from "../utils/validation.js";
 
 let ioRef = null;
 const stateByTenant = new Map();

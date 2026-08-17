@@ -1,5 +1,5 @@
 // Must be the first import in server.js: other modules read process.env at
-// their own top level (e.g. lib/botTokens.js), and ES module imports are
+// their own top level (e.g. utils/tokens/bot.js), and ES module imports are
 // evaluated before any of the importing file's own statements run — so
 // loading .env from inside server.js itself would be too late.
 import dotenv from "dotenv";

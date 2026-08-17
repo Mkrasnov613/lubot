@@ -6,6 +6,7 @@ import Image from "next/image";
 import { timeAgo } from "@/lib/utils";
 import { ActivityItem } from "@/components/ActivityFeedComponent";
 import { API_BASE_URL } from "@/lib/config";
+import { Box, Flex } from "@chakra-ui/react";
 type EventSubPayload =
   | {
       type: "channel.follow";
@@ -86,12 +87,33 @@ export default function LiveEventFeed({
   }, [socketUrl]);
 
   return (
-    <div className="flex rounded-xl p-3 mb-4 w-110 h-125 scroll-smooth overflow-x-hidden scrollbar ">
-      <ul className="flex flex-col gap-5 items-center">
+    <Box
+      className="scrollbar"
+      display="flex"
+      rounded="xl"
+      p="3"
+      mb="4"
+      w="27.5rem"
+      h="31.25rem"
+      scrollBehavior="smooth"
+      overflowX="hidden"
+    >
+      <Flex as="ul" direction="column" gap="5" align="center">
         {items.map((item) => (
-          <li
+          <Flex
+            as="li"
             key={item.id}
-            className="relative rounded-xl bg-gradient-to-b from-bg3 to-bg2 border-1 border-border p-2 flex h-20 gap-5 min-w-100"
+            position="relative"
+            rounded="xl"
+            bgGradient="to-b"
+            gradientFrom="surface2"
+            gradientTo="surface"
+            borderWidth="1px"
+            borderColor="border"
+            p="2"
+            h="20"
+            gap="5"
+            minW="25rem"
           >
             <Image
               src={item.profile_image_url || "/default-avatar.png"}
@@ -99,27 +121,36 @@ export default function LiveEventFeed({
               height={64}
               title={item.user_name}
               alt={item.user_name}
-              className="rounded-full"
+              style={{ borderRadius: "9999px" }}
             />
-            <div className="flex flex-col justify-center">
-              <div className="font-bold text-twitch flex items-center gap-2">
+            <Flex direction="column" justify="center">
+              <Flex fontWeight="bold" color="twitch" align="center" gap="2">
                 {item.user_name}
-                <span className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wide bg-bg3/70">
+                <Box
+                  as="span"
+                  px="2"
+                  py="0.5"
+                  rounded="full"
+                  fontSize="10px"
+                  textTransform="uppercase"
+                  letterSpacing="wide"
+                  bg="color-mix(in srgb, var(--color-surface-2) 70%, transparent)"
+                >
                   {item.type === "follow" ? "Follow" : "Sub"}
-                </span>
-              </div>
-            </div>
-            <div className="absolute top-3 right-5 text-xs opacity-70">
+                </Box>
+              </Flex>
+            </Flex>
+            <Box position="absolute" top="3" right="5" fontSize="xs" opacity={0.7}>
               {timeAgo(item.occurred_at)}
-            </div>
-          </li>
+            </Box>
+          </Flex>
         ))}
         {items.length === 0 && (
-          <li className="text-xs opacity-70">
+          <Box as="li" fontSize="xs" opacity={0.7}>
             No activity yet. Waiting for events…
-          </li>
+          </Box>
         )}
-      </ul>
-    </div>
+      </Flex>
+    </Box>
   );
 }

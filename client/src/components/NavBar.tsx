@@ -2,6 +2,7 @@
 import { LayoutDashboard, Bot, Music } from "lucide-react";
 import { useMemo } from "react";
 import { useParams } from "next/navigation";
+import { Flex } from "@chakra-ui/react";
 
 import NavLinkButton from "./NavLinkButton";
 
@@ -15,8 +16,8 @@ export default function NavBar() {
     [slug]
   );
   return (
-    <nav className="rounded-full flex items-start justify-center">
-      <ul className="flex items-start cursor-pointer gap-10 text-text ">
+    <Flex as="nav" rounded="full" align="flex-start" justify="center">
+      <Flex as="ul" align="flex-start" cursor="pointer" gap="10" color="text">
         {links.map(({ path, Icon, text }) => (
           <NavLinkButton
             key={path}
@@ -25,7 +26,7 @@ export default function NavBar() {
             img={<Icon size={32} />}
           />
         ))}
-      </ul>
-    </nav>
+      </Flex>
+    </Flex>
   );
 }

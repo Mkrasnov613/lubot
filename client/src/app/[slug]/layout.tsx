@@ -2,21 +2,33 @@ import SideNav from "@/components/Header";
 import ActivityFeedComponent from "@/components/ActivityFeedComponent";
 import NavBar from "@/components/NavBar";
 import PlayerPanel from "@/components/MusicPlayer/PlayerPanel";
+import { Box, Flex } from "@chakra-ui/react";
+
 export default function Layout({ children }: LayoutProps<"/[slug]">) {
   return (
-    <main className="flex flex-col justify-between items-center w-screen lg:h-screen overflow-hidden">
+    <Flex
+      as="main"
+      direction="column"
+      justify="space-between"
+      align="center"
+      w="100vw"
+      h={{ lg: "100vh" }}
+      overflow="hidden"
+    >
       <SideNav />
-      <div className="max-w-[1820px] mx-auto gap-5 px-8 py-4 flex justify-center items-start">
-        <div className="flex-1 min-w-[1285px]">{children}</div>
+      <Flex maxW="1820px" mx="auto" gap="5" px="8" py="4" justify="center" align="flex-start">
+        <Box flex="1" minW="1285px">
+          {children}
+        </Box>
 
-        <div className="flex flex-col justify-between items-center min-h-[635px]">
+        <Flex direction="column" justify="space-between" align="center" minH="635px">
           <ActivityFeedComponent />
           <NavBar />
-        </div>
-      </div>
-      <div className="w-[1740px]">
+        </Flex>
+      </Flex>
+      <Box w="1740px">
         <PlayerPanel />
-      </div>
-    </main>
+      </Box>
+    </Flex>
   );
 }

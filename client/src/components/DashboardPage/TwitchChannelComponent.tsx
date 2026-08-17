@@ -5,6 +5,7 @@ import Image from "next/image";
 import EditStreamMeta from "./EditStreamMeta";
 import { revalidatePath } from "next/cache";
 import { API_BASE_URL } from "@/lib/config";
+import { Box, Flex } from "@chakra-ui/react";
 
 export default async function TwitchChannelComponent({
   slug,
@@ -64,34 +65,44 @@ export default async function TwitchChannelComponent({
   }
 
   return (
-    <article className="flex flex-col gap-5 min-h-[400px] min-w-[520px] p-5 shadow-large bg-gradient-to-b from-bg3 to-5% to-bg2 border-1 border-border border-t-highlight rounded-2xl self-start">
-      <div className="flex items-center">
+    <Flex
+      as="article"
+      className="shadow-large"
+      direction="column"
+      gap="5"
+      minH="400px"
+      minW="520px"
+      p="5"
+      bgGradient="to-b"
+      gradientFrom="surface2"
+      gradientTo="surface"
+      borderWidth="1px"
+      borderColor="border"
+      borderTopColor="highlight"
+      rounded="2xl"
+      alignSelf="flex-start"
+    >
+      <Box display="flex" alignItems="center">
         <Suspense fallback={""}>
           <TwitchPlayer slug={slug} />
         </Suspense>
-      </div>
-      <div className="flex gap-5 font-semibold justify-start items-center text-text">
+      </Box>
+      <Flex gap="5" fontWeight="semibold" justify="flex-start" align="center" color="text">
         {boxArtUrl ? (
-          <Image
-            src={boxArtUrl}
-            width={300}
-            height={300}
-            alt=""
-            className="w-[70px] h-[93px]"
-          />
+          <Image src={boxArtUrl} width={300} height={300} alt="" style={{ width: "70px", height: "93px" }} />
         ) : (
-          <div className="w-[85px] h-[85px] rounded bg-bg3" />
+          <Box w="85px" h="85px" rounded="md" bg="surface2" />
         )}
 
-        <div className="flex flex-col">
-          <div className="text-2xl">{channel?.broadcaster_name}</div>
+        <Box display="flex" flexDir="column">
+          <Box fontSize="2xl">{channel?.broadcaster_name}</Box>
           <EditStreamMeta
             initialTitle={channel?.title ?? ""}
             initialGame={channel?.game_name ?? ""}
             updateStream={updateStream}
           />
-        </div>
-      </div>
-    </article>
+        </Box>
+      </Flex>
+    </Flex>
   );
 }

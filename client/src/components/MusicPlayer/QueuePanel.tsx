@@ -3,6 +3,7 @@
 import { Track } from "@/types/musicPlayer";
 import Image from "next/image";
 import { useQueue } from "@/hooks/useQueue";
+import { Box, Flex, Text, Heading } from "@chakra-ui/react";
 
 type QueuePanelProps = {
   initialQueue?: Track[];
@@ -10,106 +11,103 @@ type QueuePanelProps = {
   tenantId: string | null;
 };
 
-export default function QueuePanel({ 
+export default function QueuePanel({
   initialQueue = [],
-  initialNowPlaying = null, 
-  tenantId 
+  initialNowPlaying = null,
+  tenantId,
 }: QueuePanelProps) {
   const { queue, nowPlaying } = useQueue(initialQueue, initialNowPlaying, tenantId);
 
   return (
-    <div className="flex flex-col gap-5">
+    <Flex direction="column" gap="5">
       {/* Now playing */}
-      <div className="flex flex-col gap-3">
-        <h4 className="text-xs uppercase tracking-wider text-[var(--color-muted)] font-medium">
+      <Flex direction="column" gap="3">
+        <Heading as="h4" fontSize="xs" textTransform="uppercase" letterSpacing="wider" color="textMuted" fontWeight="medium">
           Now Playing
-        </h4>
+        </Heading>
         {nowPlaying ? (
-          <div className="flex items-center gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg3)] p-3">
+          <Flex align="center" gap="3" rounded="xl" borderWidth="1px" borderColor="border" bg="surface2" p="3">
             {nowPlaying.thumb && (
-              <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg">
-                <Image
-                  src={nowPlaying.thumb}
-                  alt={nowPlaying.title}
-                  fill
-                  className="object-cover"
-                />
-              </div>
+              <Box position="relative" h="16" w="16" flexShrink={0} overflow="hidden" rounded="lg">
+                <Image src={nowPlaying.thumb} alt={nowPlaying.title} fill style={{ objectFit: "cover" }} />
+              </Box>
             )}
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-medium text-[var(--color-text)]">
+            <Box minW="0" flex="1">
+              <Box truncate fontSize="sm" fontWeight="medium" color="text">
                 {nowPlaying.title}
-              </div>
-              <div className="truncate text-xs text-[var(--color-muted)] mt-1">
+              </Box>
+              <Box truncate fontSize="xs" color="textMuted" mt="1">
                 {nowPlaying.author?.name ?? "Unknown"}
-                {nowPlaying.requester && (
-                  <span className="ml-2">• @{nowPlaying.requester}</span>
-                )}
-              </div>
-            </div>
-          </div>
+                {nowPlaying.requester && <Box as="span" ml="2">• @{nowPlaying.requester}</Box>}
+              </Box>
+            </Box>
+          </Flex>
         ) : (
-          <div className="rounded-xl border border-[var(--color-border)]/50 bg-[var(--color-bg3)]/50 p-4 text-center">
-            <div className="text-sm text-[var(--color-muted)]">
+          <Box rounded="xl" borderWidth="1px" borderColor="borderSubtle" bg="surface2Subtle" p="4" textAlign="center">
+            <Text fontSize="sm" color="textMuted">
               No track playing
-            </div>
-          </div>
+            </Text>
+          </Box>
         )}
-      </div>
+      </Flex>
 
       {/* Queue header */}
-      <div className="flex items-center justify-between border-t border-[var(--color-border)] pt-4">
-        <h4 className="text-sm font-semibold text-[var(--color-text)]">Queue</h4>
-        <span className="text-xs text-[var(--color-muted)] bg-[var(--color-bg3)] px-2 py-1 rounded-full">
+      <Flex align="center" justify="space-between" borderTopWidth="1px" borderColor="border" pt="4">
+        <Heading as="h4" fontSize="sm" fontWeight="semibold" color="text">
+          Queue
+        </Heading>
+        <Text as="span" fontSize="xs" color="textMuted" bg="surface2" px="2" py="1" rounded="full">
           {queue.length} {queue.length === 1 ? "track" : "tracks"}
-        </span>
-      </div>
+        </Text>
+      </Flex>
 
       {/* Queue list */}
-      <ul className="flex flex-col gap-2 overflow-y-auto scrollbar pr-2 max-h-[50vh]">
+      <Flex as="ul" className="scrollbar" direction="column" gap="2" overflowY="auto" pr="2" maxH="50vh">
         {queue.length > 0 ? (
           queue.map((t, index) => (
-            <li
+            <Flex
+              as="li"
               key={t.id}
-              className="flex items-center gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg3)] p-3 hover:border-[var(--color-highlight)] transition-colors"
+              align="center"
+              gap="3"
+              rounded="xl"
+              borderWidth="1px"
+              borderColor="border"
+              bg="surface2"
+              p="3"
+              transition="border-color 0.15s ease"
+              _hover={{ borderColor: "highlight" }}
             >
-              <div className="flex-shrink-0 w-6 text-xs text-[var(--color-muted)] font-medium">
+              <Box flexShrink={0} w="6" fontSize="xs" color="textMuted" fontWeight="medium">
                 {index + 1}
-              </div>
+              </Box>
               {t.thumb && (
-                <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg">
-                  <Image
-                    src={t.thumb}
-                    alt={t.title}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
+                <Box position="relative" h="12" w="12" flexShrink={0} overflow="hidden" rounded="lg">
+                  <Image src={t.thumb} alt={t.title} fill style={{ objectFit: "cover" }} />
+                </Box>
               )}
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-medium text-[var(--color-text)]">
+              <Box minW="0" flex="1">
+                <Box truncate fontSize="sm" fontWeight="medium" color="text">
                   {t.title}
-                </div>
-                <div className="truncate text-xs text-[var(--color-muted)] mt-0.5">
+                </Box>
+                <Box truncate fontSize="xs" color="textMuted" mt="0.5">
                   {t.author?.name ?? "Unknown"}
-                  {t.requester && (
-                    <span className="ml-2">• @{t.requester}</span>
-                  )}
-                </div>
-              </div>
-            </li>
+                  {t.requester && <Box as="span" ml="2">• @{t.requester}</Box>}
+                </Box>
+              </Box>
+            </Flex>
           ))
         ) : (
-          <li className="text-center py-8 rounded-xl border border-[var(--color-border)]/50 bg-[var(--color-bg3)]/50">
-            <div className="text-sm text-[var(--color-muted)]">
+          <Box as="li" textAlign="center" py="8" rounded="xl" borderWidth="1px" borderColor="borderSubtle" bg="surface2Subtle">
+            <Text fontSize="sm" color="textMuted">
               Queue is empty
-            </div>
-            <div className="text-xs text-[var(--color-muted)] mt-1">
+            </Text>
+            <Text fontSize="xs" color="textMuted" mt="1">
               Add tracks using the search button
-            </div>
-          </li>
+            </Text>
+          </Box>
         )}
-      </ul>
-    </div>
+      </Flex>
+    </Flex>
   );
 }

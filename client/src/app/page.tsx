@@ -1,43 +1,88 @@
 import Link from "next/link";
 import Image from "next/image";
 import { API_BASE_URL } from "@/lib/config";
+import { Box, Flex, Heading, Text } from "@chakra-ui/react";
 
 export default function Home() {
   return (
-    <section className="h-screen flex flex-col justify-center items-center overflow-hidden">
+    <Box
+      as="section"
+      position="relative"
+      h="100vh"
+      display="flex"
+      flexDir="column"
+      justifyContent="center"
+      alignItems="center"
+      overflow="hidden"
+    >
       <Image
         src="/logo.png"
         width={86}
         height={86}
         alt=""
-        className="absolute top-10 left-10 z-3"
+        style={{ position: "absolute", top: 40, left: 40, zIndex: 3 }}
       />
-      <video width="1980" autoPlay muted loop className="relative z-0 w-full">
+      <video
+        width={1980}
+        autoPlay
+        muted
+        loop
+        style={{ position: "relative", zIndex: 0, width: "100%" }}
+      >
         <source src="bg.mp4" type="video/mp4" />
       </video>
-      <div className="absolute inset-0 bg-black/90 z-1" />
-      <div className="absolute left-0 flex flex-col bg-bg1 w-[50vw] h-screen justify-center items-center z-2">
-        <div className="flex flex-col justify-center items-start gap-5">
-          <h1 className="text-7xl/20 max-w-120 text-text text-shadow-text text-shadow-lg/40">
+      <Box position="absolute" inset="0" bg="blackAlpha.900" zIndex={1} />
+      <Flex
+        position="absolute"
+        left="0"
+        flexDir="column"
+        bg="bg"
+        w="50vw"
+        h="100vh"
+        justify="center"
+        align="center"
+        zIndex={2}
+      >
+        <Flex flexDir="column" justify="center" align="flex-start" gap="5">
+          <Heading
+            as="h1"
+            fontSize="72px"
+            lineHeight="80px"
+            maxW="30rem"
+            color="text"
+            textShadow="0 4px 40px color-mix(in srgb, var(--color-text) 40%, transparent)"
+          >
             Your bot for{" "}
-            <span className="text-[#9146FF] text-shadow-[#9146FF] text-shadow-lg/40">
+            <Box
+              as="span"
+              color="twitch"
+              textShadow="0 4px 40px color-mix(in srgb, var(--color-twitch) 40%, transparent)"
+            >
               your
-            </span>{" "}
+            </Box>{" "}
             audience
-          </h1>
-          <p className="text-muted text-xl max-w-120">
+          </Heading>
+          <Text color="textMuted" fontSize="xl" maxW="30rem">
             A streamer tool for automating live chat messages, moderation, and
             more
-          </p>
-          <Link
-            href={`${API_BASE_URL}/auth/twitch/login`}
-            className="flex bg-[#9146FF] h-13 w-56 rounded-xl text-text font-semibold items-center justify-around"
-          >
-            <Image src="/twitch.png" width={32} height={32} alt="" />
-            Log in with Twitch
+          </Text>
+          <Link href={`${API_BASE_URL}/auth/twitch/login`}>
+            <Flex
+              bg="twitch"
+              h="3.25rem"
+              w="14rem"
+              rounded="xl"
+              color="text"
+              fontWeight="semibold"
+              align="center"
+              justify="space-around"
+            >
+              <Image src="/twitch.png" width={32} height={32} alt="" />
+              Log in with Twitch
+            </Flex>
           </Link>
-        </div>
-      </div>
-    </section>
+        </Flex>
+      </Flex>
+    </Box>
   );
 }

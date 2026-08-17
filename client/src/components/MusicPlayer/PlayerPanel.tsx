@@ -1,7 +1,7 @@
-
 import PlayerBar from "./PlayerBar";
 import { cookies } from "next/headers";
 import { API_BASE_URL } from "@/lib/config";
+import { Box, Flex, Text } from "@chakra-ui/react";
 
 export default async function PlayerPanel() {
   const cookieHeader = (await cookies()).toString();
@@ -25,11 +25,23 @@ export default async function PlayerPanel() {
 
   if (!tenantId) {
     return (
-      <section className="flex flex-wrap justify-around gap-5 items-center min-h-screen mx-auto max-w-[1680px] p-10 text-[var(--color-text)] bg-bg1">
-        <div className="w-[700px]">
-          <p>Unable to load player. Please ensure you are authenticated.</p>
-        </div>
-      </section>
+      <Flex
+        as="section"
+        wrap="wrap"
+        justify="space-around"
+        gap="5"
+        align="center"
+        minH="100vh"
+        mx="auto"
+        maxW="1680px"
+        p="10"
+        color="text"
+        bg="bg"
+      >
+        <Box w="700px">
+          <Text>Unable to load player. Please ensure you are authenticated.</Text>
+        </Box>
+      </Flex>
     );
   }
 
@@ -46,13 +58,13 @@ export default async function PlayerPanel() {
     // Silently fail - WebSocket will provide state on connect
   }
   return (
-    <div className="flex items-center justify-center gap-4 bg-bg2 h-23 rounded-xl w-full mb-5">
+    <Flex align="center" justify="center" gap="4" bg="surface" h="23" rounded="xl" w="100%" mb="5">
       {/* PLAYER */}
       <PlayerBar
         initialQueue={initialPlayerState.queue}
         initialNowPlaying={initialPlayerState.nowPlaying}
         tenantId={tenantId}
       />
-    </div>
+    </Flex>
   );
 }

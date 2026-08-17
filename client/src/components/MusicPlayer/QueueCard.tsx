@@ -1,24 +1,40 @@
 import Image from "next/image";
 import type { Track } from "@/types/musicPlayer";
+import { Box, Flex } from "@chakra-ui/react";
 
 export default function QueueCard({ track }: { track: Track }) {
   return (
-    <li className="group flex items-center gap-3 rounded-xl border border-[var(--color-border)] border-t-highlight bg-gradient-to-b from-bg3 to-bg2">
+    <Flex
+      as="li"
+      align="center"
+      gap="3"
+      rounded="xl"
+      borderWidth="1px"
+      borderColor="border"
+      borderTopColor="highlight"
+      bgGradient="to-b"
+      gradientFrom="surface2"
+      gradientTo="surface"
+    >
       {/* Square cover */}
-      <div className="relative h-16 w-16 overflow-hidden rounded-l-xl">
-        <Image src={track.thumb} alt={track.title} fill className="object-cover" />
-      </div>
+      <Box position="relative" h="16" w="16" overflow="hidden" roundedLeft="xl">
+        <Image src={track.thumb} alt={track.title} fill style={{ objectFit: "cover" }} />
+      </Box>
 
       {/* Title + Author */}
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-medium">{track.title}</div>
-        <div className="truncate text-[13px] text-[var(--color-muted)]">
+      <Box minW="0" flex="1">
+        <Box truncate fontSize="sm" fontWeight="medium">
+          {track.title}
+        </Box>
+        <Box truncate fontSize="13px" color="textMuted">
           {track.author?.name ?? "—"}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* @requester at the far right */}
-      <div className="whitespace-nowrap text-xs text-[var(--color-muted)] mr-5">@{track.requester}</div>
-    </li>
+      <Box whiteSpace="nowrap" fontSize="xs" color="textMuted" mr="5">
+        @{track.requester}
+      </Box>
+    </Flex>
   );
 }

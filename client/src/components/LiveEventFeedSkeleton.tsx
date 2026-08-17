@@ -1,27 +1,39 @@
+import { Box, Flex } from "@chakra-ui/react";
+
 export default function LiveEventFeedSkeleton() {
   return (
-    <div className="rounded-xl p-3 overflow-x-scroll w-full scroll-smooth scrollbar">
-      <ul className="flex gap-4 items-center">
+    <Box className="scrollbar" rounded="xl" p="3" overflowX="scroll" w="100%" scrollBehavior="smooth">
+      <Flex gap="4" align="center">
         {[1, 2, 3, 4, 5].map((i) => (
-          <li
+          <Flex
             key={i}
-            className="relative rounded-xl bg-gradient-to-b from-bg3 to-bg2 border-1 border-border p-2 flex h-20 gap-5 min-w-100 animate-pulse"
+            className="animate-pulse"
+            position="relative"
+            rounded="xl"
+            bgGradient="to-b"
+            gradientFrom="surface2"
+            gradientTo="surface"
+            borderWidth="1px"
+            borderColor="border"
+            p="2"
+            h="20"
+            gap="5"
+            minW="25rem"
           >
             {/* Profile image skeleton */}
-            <div className="w-16 h-16 rounded-full bg-bg3"></div>
-            
+            <Box w="16" h="16" rounded="full" bg="surface2" />
+
             {/* User info skeleton */}
-            <div className="flex flex-col justify-center gap-2">
-              <div className="h-4 w-32 bg-bg3 rounded"></div>
-              <div className="h-3 w-20 bg-bg3 rounded"></div>
-            </div>
-            
+            <Flex direction="column" justify="center" gap="2">
+              <Box h="4" w="32" bg="surface2" rounded="md" />
+              <Box h="3" w="20" bg="surface2" rounded="md" />
+            </Flex>
+
             {/* Time skeleton */}
-            <div className="absolute top-3 right-5 h-3 w-12 bg-bg3 rounded"></div>
-          </li>
+            <Box position="absolute" top="3" right="5" h="3" w="12" bg="surface2" rounded="md" />
+          </Flex>
         ))}
-      </ul>
-    </div>
+      </Flex>
+    </Box>
   );
 }
-

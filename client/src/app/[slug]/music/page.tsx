@@ -1,7 +1,7 @@
-import QueuePanel from "@/components/MusicPlayer/QueuePanel";
-import PlayerPanel from "@/components/MusicPlayer/PlayerPanel";
+import QueuePanel from "@/app/[slug]/music/components/QueuePanel";
+import PlayerPanel from "@/app/[slug]/music/components/PlayerPanel";
 import { cookies } from "next/headers";
-import SearchOverlay from "@/components/MusicPlayer/SearchOverlay";
+import SearchOverlay from "@/app/[slug]/music/components/SearchOverlay";
 import { API_BASE_URL } from "@/lib/config";
 import { Box, Flex, Text } from "@chakra-ui/react";
 

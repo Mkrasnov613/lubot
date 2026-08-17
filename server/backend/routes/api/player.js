@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { requireAuth } from "../../middleware/requireAuth.js";
-import { resolveTrack, enqueue, playNext, getState } from "../../lib/player.js";
+import { resolveTrack, enqueue, playNext, getState } from "../../services/player.js";
 
 export const APIRouter = Router();
 

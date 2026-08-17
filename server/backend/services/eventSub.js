@@ -1,5 +1,5 @@
 import WebSocket from "ws";
-import { refreshTokenRow } from "./twitchTokens.js";
+import { refreshTokenRow } from "../utils/tokens/broadcaster.js";
 
 async function createSub({ token, sessionId, type, version, condition }) {
   const res = await fetch(

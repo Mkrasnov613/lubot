@@ -1,7 +1,7 @@
 import "./globals.css";
 import { Toaster } from "sonner";
 import { Inter } from "next/font/google";
-import { Provider } from "@/components/ui/provider";
+import { Provider } from "@/lib/chakra/provider";
 import { Box } from "@chakra-ui/react";
 
 const inter = Inter({

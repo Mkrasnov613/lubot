@@ -1,7 +1,6 @@
 import SideNav from "@/components/Header";
 import ActivityFeedComponent from "@/components/ActivityFeedComponent";
-import NavBar from "@/components/NavBar";
-import PlayerPanel from "@/components/MusicPlayer/PlayerPanel";
+import PlayerPanel from "@/app/[slug]/music/components/PlayerPanel";
 import { Box, Flex } from "@chakra-ui/react";
 
 export default function Layout({ children }: LayoutProps<"/[slug]">) {
@@ -23,7 +22,6 @@ export default function Layout({ children }: LayoutProps<"/[slug]">) {
 
         <Flex direction="column" justify="space-between" align="center" minH="635px">
           <ActivityFeedComponent />
-          <NavBar />
         </Flex>
       </Flex>
       <Box w="1740px">

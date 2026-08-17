@@ -6,19 +6,22 @@ import { Server } from "socket.io";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { createRequire } from "module";
+import path from "path";
+import { fileURLToPath } from "url";
 
 import { APIRouter } from "./routes/api/player.js";
 import { dataTenantRouter } from "./routes/api/data-tenant.js";
-import { initPlayer, getState, roomName } from "./lib/player.js";
+import { initPlayer, getState, roomName } from "./services/player.js";
 
 import { startTokenScheduler } from "./utils/tokenScheduler.js";
-import { initDB } from "./utils/initDB.js";
+import { initDB } from "./db/initDB.js";
 import { TwitchRouter } from "./routes/api/twitch.js";
-import { TwitchBotAuthRouter } from "./routes/auth-twitch-bot.js";
-import { TwitchAuthRouter } from "./routes/auth-twitch-broadcaster.js";
+import { TwitchBotAuthRouter } from "./routes/auth/bot.js";
+import { TwitchAuthRouter } from "./routes/auth/broadcaster.js";
 import { BotRouter } from "./routes/api/bot.js";
 import { NukeRouter } from "./routes/api/nuke-word.js";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 const pkg = require("../package.json");
 
@@ -57,7 +60,7 @@ initPlayer(io);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static("backend"));
+app.use(express.static(path.join(__dirname, "public")));
 app.use(cookieParser());
 app.use("/api/twitch", TwitchRouter);
 app.use("/api/bot", BotRouter);

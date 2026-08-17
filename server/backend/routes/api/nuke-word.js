@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { db } from "../../db.js";
+import { db } from "../../db/connection.js";
 import { requireAuth } from "../../middleware/requireAuth.js";
-import { invalidateNukeCache } from "../../lib/botManager.js";
+import { invalidateNukeCache } from "../../services/botManager.js";
 
 export const NukeRouter = Router();
 

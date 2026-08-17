@@ -1,6 +1,6 @@
 // routes/api/bot.ts
 import { Router } from "express";
-import { enableBot, disableBot, botStatus } from "../../lib/botManager.js";
+import { enableBot, disableBot, botStatus } from "../../services/botManager.js";
 import { verifySession } from "../../utils/session.js";
 import { requireAuth } from "../../middleware/requireAuth.js";
 

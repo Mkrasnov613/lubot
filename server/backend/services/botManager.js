@@ -1,6 +1,6 @@
-// lib/botManager.js
+// services/botManager.js
 import tmi from "tmi.js";
-import { db } from "../db.js";
+import { db } from "../db/connection.js";
 import axios from "axios";
 import {
   enqueue,
@@ -8,9 +8,9 @@ import {
   getState,
   resolveTrack,
   skip,
-} from "../lib/player.js";
-import { getBotAccessToken } from "./botTokens.js";
-import { refreshTokenRow } from "./twitchTokens.js";
+} from "./player.js";
+import { getBotAccessToken } from "../utils/tokens/bot.js";
+import { refreshTokenRow } from "../utils/tokens/broadcaster.js";
 
 const conns = new Map(); // tenantId -> tmi.Client
 const nukeWordsCache = new Map(); // broadcasterId -> [word, ...]

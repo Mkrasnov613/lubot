@@ -1,10 +1,10 @@
 import { Router } from "express";
 import axios from "axios";
-import { signSession, verifySession } from "../utils/session.js";
-import { db } from "../db.js";
-import { io } from "../server.js";
-import { startEventSub } from "../lib/eventSub.js";
-import { enableBot } from "../lib/botManager.js";
+import { signSession, verifySession } from "../../utils/session.js";
+import { db } from "../../db/connection.js";
+import { io } from "../../server.js";
+import { startEventSub } from "../../services/eventSub.js";
+import { enableBot } from "../../services/botManager.js";
 
 const frontendBaseUrl = (
   process.env.FRONTEND_BASE_URL ?? "https://twitch-website-bot.vercel.app"

@@ -10,6 +10,7 @@ import { showToast } from "@/lib/toast";
 import SearchOverlay from "./SearchOverlay";
 import QueuePanel from "./QueuePanel";
 import { API_BASE_URL } from "@/lib/config";
+import { Box, Flex, chakra } from "@chakra-ui/react";
 
 type YouTubePlayer = {
   getIframe?: () => HTMLIFrameElement | null;
@@ -456,160 +457,217 @@ export default function PlayerBar({
   }
 
   return (
-    <div className="gap-5 w-full flex items-center justify-between overflow-hidden">
+    <Flex gap="5" w="100%" align="center" justify="space-between" overflow="hidden">
       {/* Artwork */}
-      <div className="flex items-center gap-5">
-        <div className="relative w-23 h-23">
+      <Flex align="center" gap="5">
+        <Box position="relative" w="23" h="23">
           <Image
             src={nowPlaying?.thumb || "/fallback-albumcover.png"}
             alt={nowPlaying?.title || "Album cover"}
             fill
-            className="z-10 rounded-l-sm object-cover"
+            style={{ objectFit: "cover" }}
             sizes=""
           />
-        </div>
-        <div
-          className={`truncate flex flex-col justify-center items-start gap-2 text-md font-medium`}
-        >
+        </Box>
+        <Box truncate display="flex" flexDir="column" justifyContent="center" alignItems="flex-start" gap="2" fontSize="md" fontWeight="medium">
           {nowPlaying ? nowPlaying.title : "Waiting for a track"}
-          <div className="text-muted">
+          <Box color="textMuted">
             {nowPlaying
               ? `${nowPlaying.author?.name ?? "—"} • @${
                   nowPlaying.requester ?? ""
                 }`
               : ""}
-          </div>
-        </div>
-      </div>
-      <div className="min-w-115 flex flex-col items-center justify-center">
-        <div className="flex items-center justify-center relative w-20">
-          <button
+          </Box>
+        </Box>
+      </Flex>
+      <Flex minW="115" direction="column" align="center" justify="center">
+        <Flex align="center" justify="center" position="relative" w="20">
+          <chakra.button
             onClick={togglePlay}
             title="Play/Pause"
-            className="cursor-pointer"
+            cursor="pointer"
             disabled={isPlaying}
           >
-            <div
-              className={`bg-bg2 p-3 ${
-                isPlaying && "hover:bg-bg3"
-              } transition-all rounded-full`}
-            >
+            <Box bg="surface" p="3" transition="background-color 0.15s ease" _hover={isPlaying ? { bg: "surface2" } : undefined} rounded="full">
               {spinning ? <Play /> : <Pause />}
-            </div>
-          </button>
-          <button
+            </Box>
+          </chakra.button>
+          <chakra.button
             onClick={nextTrack}
             disabled={isPlaying}
-            className="absolute -right-10 cursor-pointer"
+            position="absolute"
+            right="-2.5rem"
+            cursor="pointer"
           >
-            <div
-              className={`bg-bg2 p-3 ${
-                isPlaying && "hover:bg-bg3"
-              } transition-all rounded-full`}
-            >
+            <Box bg="surface" p="3" transition="background-color 0.15s ease" _hover={isPlaying ? { bg: "surface2" } : undefined} rounded="full">
               <SkipForward />
-            </div>
-          </button>
-        </div>
+            </Box>
+          </chakra.button>
+        </Flex>
 
         {/* Hidden iframe mount point (0x0) */}
-        <div className="h-0 w-0 overflow-hidden">
-          <div ref={mountRef} />
-        </div>
+        <Box h="0" w="0" overflow="hidden">
+          <Box ref={mountRef} />
+        </Box>
 
         {/* Progress */}
-        <div className="mt-3 flex self-stretch items-center gap-3 text-xs tabular-nums text-[var(--color-muted)]">
-          <span>{formatTime(localPos || positionSec)}</span>
-          <input
+        <Flex mt="3" alignSelf="stretch" align="center" gap="3" fontSize="xs" style={{ fontVariantNumeric: "tabular-nums" }} color="textMuted">
+          <Box as="span">{formatTime(localPos || positionSec)}</Box>
+          <chakra.input
             type="range"
             min={0}
             max={100}
             step={0.1}
             value={progress}
             readOnly
-            className="range block h-2 w-full cursor-default appearance-none rounded-full bg-[var(--color-bg3)] outline-none
-                     [::-webkit-slider-thumb]:h-3 [::-webkit-slider-thumb]:w-3 [::-webkit-slider-thumb]:appearance-none
-                     [::-webkit-slider-thumb]:rounded-full [::-webkit-slider-thumb]:bg-[var(--color-highlight)]"
+            display="block"
+            h="2"
+            w="100%"
+            cursor="default"
+            style={{ appearance: "none" }}
+            rounded="full"
+            bg="surface2"
+            outline="none"
+            css={{
+              "&::-webkit-slider-thumb": {
+                height: "0.75rem",
+                width: "0.75rem",
+                appearance: "none",
+                borderRadius: "9999px",
+                background: "var(--color-accent-700)",
+              },
+            }}
           />
-          <span>
+          <Box as="span">
             {formatTime(
               localDur || durationSec || nowPlaying?.durationSec || 0
             )}
-          </span>
-        </div>
-      </div>
-      
+          </Box>
+        </Flex>
+      </Flex>
+
       {/* Right side buttons */}
-      <div className="min-w-60 flex items-center justify-end gap-2">
-        <button
+      <Flex minW="60" align="center" justify="flex-end" gap="2">
+        <Box
+          as="button"
           onClick={() => setShowQueue(!showQueue)}
-          className="bg-bg2 hover:bg-bg3 transition-all rounded-full p-3"
+          bg="surface"
+          transition="background-color 0.15s ease"
+          _hover={{ bg: "surface2" }}
+          rounded="full"
+          p="3"
           title="Show queue"
         >
-          <List className="w-5 h-5" />
-        </button>
-        <button
+          <List size={20} />
+        </Box>
+        <Box
+          as="button"
           onClick={() => setShowSearch(!showSearch)}
-          className="bg-bg2 hover:bg-bg3 transition-all rounded-full p-3"
+          bg="surface"
+          transition="background-color 0.15s ease"
+          _hover={{ bg: "surface2" }}
+          rounded="full"
+          p="3"
           title="Search music"
         >
-          <Search className="w-5 h-5" />
-        </button>
-      </div>
+          <Search size={20} />
+        </Box>
+      </Flex>
 
       {/* Queue Overlay */}
       {showQueue && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+        <Flex
+          position="fixed"
+          inset="0"
+          zIndex={50}
+          align="center"
+          justify="center"
+          bg="blackAlpha.500"
+          style={{ backdropFilter: "blur(4px)" }}
           onClick={() => setShowQueue(false)}
         >
-          <div
-            className="relative bg-[var(--color-bg2)] rounded-2xl border border-[var(--color-border)] shadow-large max-w-md w-full max-h-[80vh] mx-4"
+          <Box
+            className="shadow-large"
+            position="relative"
+            bg="surface"
+            rounded="2xl"
+            borderWidth="1px"
+            borderColor="border"
+            maxW="md"
+            w="100%"
+            maxH="80vh"
+            mx="4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="absolute top-4 right-4 z-10">
-              <button
+            <Box position="absolute" top="4" right="4" zIndex={10}>
+              <Box
+                as="button"
                 onClick={() => setShowQueue(false)}
-                className="bg-bg3 hover:bg-bg2 rounded-full p-2 transition-colors"
+                bg="surface2"
+                transition="background-color 0.15s ease"
+                _hover={{ bg: "surface" }}
+                rounded="full"
+                p="2"
                 title="Close"
               >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="p-6 pt-12">
+                <X size={16} />
+              </Box>
+            </Box>
+            <Box p="6" pt="12">
               <QueuePanel
                 initialQueue={initialQueue}
                 initialNowPlaying={initialNowPlaying}
                 tenantId={tenantId}
               />
-            </div>
-          </div>
-        </div>
+            </Box>
+          </Box>
+        </Flex>
       )}
 
       {/* Search Overlay */}
       {showSearch && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+        <Flex
+          position="fixed"
+          inset="0"
+          zIndex={50}
+          align="center"
+          justify="center"
+          bg="blackAlpha.500"
+          style={{ backdropFilter: "blur(4px)" }}
           onClick={() => setShowSearch(false)}
         >
-          <div
-            className="relative bg-[var(--color-bg2)] rounded-2xl border border-[var(--color-border)] shadow-large max-w-2xl w-full max-h-[80vh] mx-4 overflow-hidden"
+          <Box
+            className="shadow-large"
+            position="relative"
+            bg="surface"
+            rounded="2xl"
+            borderWidth="1px"
+            borderColor="border"
+            maxW="2xl"
+            w="100%"
+            maxH="80vh"
+            mx="4"
+            overflow="hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="absolute top-4 right-4 z-10">
-              <button
+            <Box position="absolute" top="4" right="4" zIndex={10}>
+              <Box
+                as="button"
                 onClick={() => setShowSearch(false)}
-                className="bg-bg3 hover:bg-bg2 rounded-full p-2 transition-colors"
+                bg="surface2"
+                transition="background-color 0.15s ease"
+                _hover={{ bg: "surface" }}
+                rounded="full"
+                p="2"
                 title="Close"
               >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+                <X size={16} />
+              </Box>
+            </Box>
             <SearchOverlay onClose={() => setShowSearch(false)} />
-          </div>
-        </div>
+          </Box>
+        </Flex>
       )}
-    </div>
+    </Flex>
   );
 }

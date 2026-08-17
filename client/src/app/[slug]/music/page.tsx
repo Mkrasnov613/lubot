@@ -3,6 +3,7 @@ import PlayerPanel from "@/components/MusicPlayer/PlayerPanel";
 import { cookies } from "next/headers";
 import SearchOverlay from "@/components/MusicPlayer/SearchOverlay";
 import { API_BASE_URL } from "@/lib/config";
+import { Box, Flex, Text } from "@chakra-ui/react";
 
 export default async function MusicPage() {
   const cookieHeader = (await cookies()).toString();
@@ -28,11 +29,23 @@ export default async function MusicPage() {
   // If tenantId is not available, return early or show error
   if (!tenantId) {
     return (
-      <section className="flex flex-wrap justify-around gap-5 items-center min-h-screen mx-auto max-w-[1680px] p-10 text-[var(--color-text)] bg-bg1">
-        <div className="w-[700px]">
-          <p>Unable to load player. Please ensure you are authenticated.</p>
-        </div>
-      </section>
+      <Flex
+        as="section"
+        wrap="wrap"
+        justify="space-around"
+        gap="5"
+        align="center"
+        minH="100vh"
+        mx="auto"
+        maxW="1680px"
+        p="10"
+        color="text"
+        bg="bg"
+      >
+        <Box w="700px">
+          <Text>Unable to load player. Please ensure you are authenticated.</Text>
+        </Box>
+      </Flex>
     );
   }
 
@@ -50,24 +63,37 @@ export default async function MusicPage() {
   }
 
   return (
-    <section className="relative flex flex-wrap justify-around gap-5 items-center min-h-screen mx-auto max-w-[1680px] p-10 text-[var(--color-text)] bg-bg1">
-      <div className="w-[700px]">
+    <Flex
+      as="section"
+      position="relative"
+      wrap="wrap"
+      justify="space-around"
+      gap="5"
+      align="center"
+      minH="100vh"
+      mx="auto"
+      maxW="1680px"
+      p="10"
+      color="text"
+      bg="bg"
+    >
+      <Box w="700px">
         <PlayerPanel
           initialQueue={initialPlayerState.queue}
           initialNowPlaying={initialPlayerState.nowPlaying}
           tenantId={tenantId}
         />
-      </div>
-      <div className="">
+      </Box>
+      <Box>
         <QueuePanel
           initialQueue={initialPlayerState.queue}
           initialNowPlaying={initialPlayerState.nowPlaying}
           tenantId={tenantId}
         />
-      </div>
-      <div className="absolute top-0 z-100">
+      </Box>
+      <Box position="absolute" top="0" zIndex={100}>
         <SearchOverlay />
-      </div>
-    </section>
+      </Box>
+    </Flex>
   );
 }

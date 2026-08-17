@@ -1,5 +1,6 @@
 import NukeWordsSettings from "@/components/BotPage/NukeWordsSettings";
 import BotConnectionWindow from "@/components/BotPage/BotConnectionWindow";
+import { Flex } from "@chakra-ui/react";
 
 export default async function BotPage({
   params,
@@ -9,9 +10,9 @@ export default async function BotPage({
   const { slug } = await params;
   // ─── UI ───
   return (
-    <div className="flex flex-col items-center justify-center gap-5 px-4 py-8 bg-bg1">
+    <Flex direction="column" align="center" justify="center" gap="5" px="4" py="8" bg="bg">
       <BotConnectionWindow />
       <NukeWordsSettings />
-    </div>
+    </Flex>
   );
 }

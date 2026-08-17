@@ -3,22 +3,20 @@
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import SideNavFooter from "./SIdeNavFooter";
+import { Flex } from "@chakra-ui/react";
 
 export default function Header() {
   const { slug } = useParams();
-  
 
   return (
-    <aside className="flex items-center w-full py-5 px-10">
-      <div className="flex-1 flex justify-start items-start">
-        <div className="flex items-center gap-5">
+    <Flex as="aside" align="center" w="100%" py="5" px="10">
+      <Flex flex="1" justify="flex-start" align="flex-start">
+        <Flex align="center" gap="5">
           <Image src="/logo.png" width={72} height={72} alt="" />
-        </div>
-
-        
-      </div>
+        </Flex>
+      </Flex>
 
       <SideNavFooter slug={slug!.toString()} />
-    </aside>
+    </Flex>
   );
 }

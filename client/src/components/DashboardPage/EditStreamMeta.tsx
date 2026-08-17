@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { showToast } from "@/lib/toast";
 import { API_BASE_URL } from "@/lib/config";
+import { Box, Flex, Input, Button, Text, chakra } from "@chakra-ui/react";
 
 type Props = {
   initialTitle: string;
@@ -135,37 +136,45 @@ export default function EditStreamMeta({
 
   if (!editing) {
     return (
-      <div className="flex items-center gap-3">
-        <div>
-          <div className="max-w-130 wrap-break-word">{title}</div>
-          <div className="text-twitch">{gameName}</div>
-        </div>
-        <button
-          type="button"
-          onClick={() => setEditing(true)}
-          className="px-3 py-1 rounded-xl border border-border hover:bg-bg3"
-        >
+      <Flex align="center" gap="3">
+        <Box>
+          <Box maxW="32.5rem" style={{ wordBreak: "break-word" }}>
+            {title}
+          </Box>
+          <Box color="twitch">{gameName}</Box>
+        </Box>
+        <Button type="button" onClick={() => setEditing(true)} variant="secondary" size="sm">
           Edit
-        </button>
-      </div>
+        </Button>
+      </Flex>
     );
   }
 
   return (
-    <form action={onSubmit} className="flex items-end gap-2 relative">
-      <label className="flex flex-col">
-        <span className="text-sm opacity-80">Title</span>
-        <input
+    <chakra.form action={onSubmit} display="flex" alignItems="flex-end" gap="2" position="relative">
+      <Box as="label" display="flex" flexDir="column">
+        <Text fontSize="sm" opacity={0.8}>
+          Title
+        </Text>
+        <Input
           name="title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="px-3 py-2 rounded-lg bg-bg3 border border-border outline-none"
+          bg="surface2"
+          borderWidth="1px"
+          borderColor="border"
+          px="3"
+          py="2"
+          rounded="lg"
+          outline="none"
         />
-      </label>
+      </Box>
 
-      <label className="flex flex-col relative">
-        <span className="text-sm opacity-80">Game</span>
-        <input
+      <Box as="label" display="flex" flexDir="column" position="relative">
+        <Text fontSize="sm" opacity={0.8}>
+          Game
+        </Text>
+        <Input
           name="game"
           value={gameName}
           onChange={(e) => {
@@ -176,27 +185,50 @@ export default function EditStreamMeta({
           }}
           onKeyDown={onKeyDown}
           autoComplete="off"
-          className="px-3 py-2 rounded-lg bg-bg3 border border-border outline-none"
+          bg="surface2"
+          borderWidth="1px"
+          borderColor="border"
+          px="3"
+          py="2"
+          rounded="lg"
+          outline="none"
         />
         {/* ensure id is sent if selected */}
         {gameId && <input type="hidden" name="gameId" value={gameId} />}
 
         {open && results.length > 0 && (
-          <ul
+          <Box
+            as="ul"
             ref={listRef}
-            className="absolute top-[100%] mt-1 z-20 max-h-42 w-full overflow-auto rounded-lg border border-border bg-bg2 shadow-xl"
+            position="absolute"
+            top="100%"
+            mt="1"
+            zIndex={20}
+            maxH="10.5rem"
+            w="100%"
+            overflow="auto"
+            rounded="lg"
+            borderWidth="1px"
+            borderColor="border"
+            bg="surface"
+            boxShadow="xl"
           >
             {results.map((g, i) => (
-              <li key={g.id} className="">
-                <button
+              <Box as="li" key={g.id}>
+                <chakra.button
+                  type="button"
                   onMouseDown={(e) => {
                     e.preventDefault();
                     pickGame(g);
                   }}
                   onMouseOver={() => setHighlight(i)}
-                  className={`flex items-center w-full gap-3 px-3 py-2  ${
-                    i === highlight ? "bg-bg3" : ""
-                  }`}
+                  display="flex"
+                  alignItems="center"
+                  w="100%"
+                  gap="3"
+                  px="3"
+                  py="2"
+                  bg={i === highlight ? "surface2" : undefined}
                 >
                   {g.boxArtUrl ? (
                     <img
@@ -204,40 +236,47 @@ export default function EditStreamMeta({
                       alt=""
                       width={26}
                       height={36}
-                      className="rounded"
+                      style={{ borderRadius: "0.375rem" }}
                     />
                   ) : (
-                    <div className="w-[26px] h-[36px] rounded bg-bg3" />
+                    <Box w="26px" h="36px" rounded="md" bg="surface2" />
                   )}
-                  <span>{g.name}</span>
-                </button>
-              </li>
+                  <Text>{g.name}</Text>
+                </chakra.button>
+              </Box>
             ))}
-          </ul>
+          </Box>
         )}
         {open && searching && results.length === 0 && (
-          <div className="absolute top-[100%] mt-1 z-20 w-full px-3 py-2 rounded-lg border border-border bg-bg2 shadow-xl text-sm opacity-80">
+          <Box
+            position="absolute"
+            top="100%"
+            mt="1"
+            zIndex={20}
+            w="100%"
+            px="3"
+            py="2"
+            rounded="lg"
+            borderWidth="1px"
+            borderColor="border"
+            bg="surface"
+            boxShadow="xl"
+            fontSize="sm"
+            opacity={0.8}
+          >
             Searching…
-          </div>
+          </Box>
         )}
-      </label>
+      </Box>
 
-      <div className="flex justify-center items-end gap-2">
-        <button
-          type="submit"
-          disabled={!isSelected}
-          className="px-3 py-2 rounded-xl bg-twitch text-white disabled:opacity-60"
-        >
+      <Flex justify="center" align="flex-end" gap="2">
+        <Button type="submit" disabled={!isSelected} variant="twitch" size="md">
           {isPending ? "Saving…" : "Save"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setEditing(false)}
-          className="px-3 py-2 rounded-xl border border-border"
-        >
+        </Button>
+        <Button type="button" onClick={() => setEditing(false)} variant="secondary" size="md">
           Cancel
-        </button>
-      </div>
-    </form>
+        </Button>
+      </Flex>
+    </chakra.form>
   );
 }

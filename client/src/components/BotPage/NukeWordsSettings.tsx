@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Bomb } from "lucide-react";
 import { API_BASE_URL } from "@/lib/config";
+import { Box, Flex, Stack, Input, Button, Text, chakra } from "@chakra-ui/react";
 
 type NukeWord = {
   id: number;
@@ -72,51 +73,109 @@ export default function NukeWordsSettings() {
   }
 
   return (
-    <div className="relative space-y-4 rounded-2xl border border-border bg-bg2 p-4 max-h-37">
-      <form onSubmit={handleAdd} className="relative">
-        <input
-          className="flex-1 rounded-xl border border-border focus:border-highlight bg-bg px-3 py-2 text-lg outline-none h-15 w-[400px] "
+    <Stack position="relative" gap="4" rounded="2xl" borderWidth="1px" borderColor="border" bg="surface" p="4" maxH="9.25rem">
+      <Box as="form" onSubmit={handleAdd} position="relative">
+        <Input
           placeholder="Blacklist a phrase..."
           value={newWord}
           onChange={(e) => setNewWord(e.target.value)}
+          flex="1"
+          rounded="xl"
+          borderWidth="1px"
+          borderColor="border"
+          _focus={{ borderColor: "highlight" }}
+          bg="bg"
+          px="3"
+          py="2"
+          fontSize="lg"
+          outline="none"
+          h="3.75rem"
+          w="400px"
         />
-        <button
+        <chakra.button
           type="submit"
           disabled={saving || !newWord.trim()}
-          className="absolute right-0 top-1/2 -translate-y-1/2 rounded-r-xl px-4 py-2 border-highlight border-1 text-sm font-medium h-full bg-bg3 active:bg-twitch hover:bg-twitch/50 text-white disabled:border-0 disabled:bg-transparent disabled:opacity-60 disabled:cursor-not-allowed"
+          position="absolute"
+          right="0"
+          top="50%"
+          style={{ transform: "translateY(-50%)" }}
+          roundedRight="xl"
+          px="4"
+          py="2"
+          borderWidth="1px"
+          borderColor="highlight"
+          fontSize="sm"
+          fontWeight="medium"
+          h="100%"
+          bg="surface2"
+          color="white"
+          _active={{ bg: "twitch" }}
+          _hover={{ bg: "color-mix(in srgb, var(--color-twitch) 50%, transparent)" }}
+          _disabled={{ borderWidth: 0, bg: "transparent", opacity: 0.6, cursor: "not-allowed" }}
         >
           <Bomb />
-        </button>
-      </form>
+        </chakra.button>
+      </Box>
 
-      <button
+      <Box
+        as="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="rounded-xl w-40 h-10 bg-gradient-to-b from-bg2 from-90% to-bg3 border-1 border-border hover:from-5% hover:border-t-highlight transition-all"
+        rounded="xl"
+        w="40"
+        h="10"
+        bgGradient="to-b"
+        gradientFrom="surface"
+        gradientTo="surface2"
+        borderWidth="1px"
+        borderColor="border"
+        transition="all 0.15s ease"
+        _hover={{ borderTopColor: "highlight" }}
       >
         {isOpen ? "Hide" : "Show"} Blacklist
-      </button>
+      </Box>
 
       {isOpen && (
         <>
-        {loading && <p>loading...</p>}
-          <ul className="absolute -bottom-35 right-4 space-y-2 w-1/2 h-50 rounded-xl border-border border-t-highlight border overflow-y-scroll flex flex-col justify-start scrollbar p-2 bg-gradient-to-b from-bg2 to-bg3">
+          {loading && <Text>loading...</Text>}
+          <Flex
+            as="ul"
+            className="scrollbar"
+            direction="column"
+            justify="flex-start"
+            position="absolute"
+            bottom="-8.75rem"
+            right="4"
+            gap="2"
+            w="50%"
+            h="12.5rem"
+            rounded="xl"
+            borderWidth="1px"
+            borderColor="border"
+            borderTopColor="highlight"
+            overflowY="scroll"
+            p="2"
+            bgGradient="to-b"
+            gradientFrom="surface"
+            gradientTo="surface2"
+          >
             {words.map((w) => (
-              <li
-                key={w.id}
-                className="flex items-center justify-between rounded-xl bg-bg px-3 py-2 text-md"
-              >
-                <span>{w.word}</span>
-                <button
+              <Flex as="li" key={w.id} align="center" justify="space-between" rounded="xl" bg="bg" px="3" py="2" fontSize="md">
+                <Text as="span">{w.word}</Text>
+                <Button
                   onClick={() => handleDelete(w.id)}
-                  className="text-xs cursor-pointer text-red-400 hover:text-red-300"
+                  variant="ghost"
+                  size="sm"
+                  fontSize="xs"
+                  color="#f87171"
+                  _hover={{ color: "#fca5a5" }}
                 >
                   Remove
-                </button>
-              </li>
-            ))}            
-          </ul>
+                </Button>
+              </Flex>
+            ))}
+          </Flex>
         </>
       )}
-    </div>
+    </Stack>
   );
 }

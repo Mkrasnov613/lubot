@@ -26,7 +26,7 @@ const app = express();
 const server = http.createServer(app);
 
 const allowedOrigins = [
-  "http://localhost:3001",
+  "http://localhost:5173",
   process.env.FRONTEND_BASE_URL,
 ].filter(Boolean);
 

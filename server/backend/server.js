@@ -25,6 +25,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 const pkg = require("../package.json");
 
+// Rate limiting middleware
+const RateLimit = require("express-rate-limit");
+
+const defaultLimiter = RateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // max 100 requests per windowMs
+});
+
 const app = express();
 const server = http.createServer(app);
 
@@ -69,6 +77,7 @@ app.use("/api/player", APIRouter);
 app.use("/api/data", dataTenantRouter);
 app.use("/auth/twitch", TwitchAuthRouter);
 app.use("/auth/twitch-bot", TwitchBotAuthRouter);
+app.use(defaultLimiter)
 
 app.get("/version", (_req, res) => {
   res.json({ version: pkg.version, commit: process.env.GIT_SHA || "dev" });

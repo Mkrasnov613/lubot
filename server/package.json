@@ -1,7 +1,7 @@
 {
   "name": "twitch-music-bot",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "scripts": {
     "dev": "node --watch backend/server.js",
@@ -14,6 +14,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.6.2",
     "jsonwebtoken": "^9.0.2",
     "socket.io": "^4.8.1",
     "tmi.js": "^1.8.5",

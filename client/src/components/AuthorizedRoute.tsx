@@ -26,14 +26,6 @@ export const AuthorizedRoute = ({
           >
             {children}
           </Box>
-
-          {/*
-          // Removed PlayerPanel from the bottom of the page to avoid layout issues, player panel is not integrated properly yet.
-          // It will be added back in once the player panel is fully functional and integrated into the layout.
-          <Box flexShrink={0} borderTopWidth="1px" borderColor="border">
-            <PlayerPanel />
-          </Box>
-          */}
         </Flex>
       </Flex>
     </SidebarProvider>

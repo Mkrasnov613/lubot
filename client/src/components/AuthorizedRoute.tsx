@@ -2,7 +2,6 @@ import { Box, Flex } from "@chakra-ui/react";
 import AppSidebar from "@/components/AppSidebar";
 import AppHeader from "@/components/AppHeader";
 import { SidebarProvider } from "@/components/SidebarContext";
-import PlayerPanel from "@/app/[slug]/music/components/PlayerPanel";
 
 export const AuthorizedRoute = ({
   children,

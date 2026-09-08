@@ -1,5 +1,5 @@
 
-import { allowedOrigins } from "../../server.js";
+import { allowedOrigins } from "../server.js";
 
 export function requireSameOrigin(req, res, next) {
   let origin = req.headers.origin || null;

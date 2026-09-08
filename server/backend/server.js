@@ -9,17 +9,13 @@ import { createRequire } from "module";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import { APIRouter } from "./routes/api/player.js";
 import { dataTenantRouter } from "./routes/api/data-tenant.js";
-import { initPlayer, getState, roomName } from "./services/player.js";
 
 import { startTokenScheduler } from "./utils/tokenScheduler.js";
 import { initDB } from "./db/initDB.js";
 import { TwitchRouter } from "./routes/api/twitch.js";
 import { TwitchBotAuthRouter } from "./routes/auth/bot.js";
 import { TwitchAuthRouter } from "./routes/auth/broadcaster.js";
-import { BotRouter } from "./routes/api/bot.js";
-import { NukeRouter } from "./routes/api/nuke-word.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -63,42 +59,18 @@ export const io = new Server(server, {
   },
 });
 
-initPlayer(io);
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cookieParser());
 app.use(defaultLimiter);
 app.use("/api/twitch", TwitchRouter);
-app.use("/api/bot", BotRouter);
-app.use("/api/nuke-words", NukeRouter);
-app.use("/api/player", APIRouter);
 app.use("/api/data", dataTenantRouter);
 app.use("/auth/twitch", TwitchAuthRouter);
 app.use("/auth/twitch-bot", TwitchBotAuthRouter);
 
 app.get("/version", (_req, res) => {
   res.json({ version: pkg.version, commit: process.env.GIT_SHA || "dev" });
-});
-
-io.on("connection", (socket) => {
-  const tenantId =
-    socket.handshake.auth?.tenantId || socket.handshake.query?.tenantId;
-
-  if (!tenantId) {
-    console.warn("Socket without tenantId, disconnecting", socket.id);
-    socket.disconnect();
-    return;
-  }
-
-  const room = roomName(tenantId);
-  socket.join(room);
-
-  console.log("Socket connected", socket.id, "tenant=", tenantId);
-
-  const { QUEUE, nowPlaying } = getState(tenantId);
-  socket.emit("queue:update", { queue: QUEUE, nowPlaying });
 });
 
 io.of("/eventsub").on("connection", (socket) => {

@@ -41,6 +41,48 @@ TwitchRouter.get("/channel", requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * Current broadcast state, for the on-air tally in the dashboard header.
+ *
+ * EventSub already pushes `stream.online`, but that only reports the moment
+ * a stream starts — a page loaded mid-broadcast would show "off air" until
+ * the next transition. This fills that gap on load; the socket keeps it
+ * current afterwards.
+ *
+ * Helix returns an empty `data` array when the channel is offline, which is
+ * the offline signal — not an error.
+ */
+TwitchRouter.get("/stream", requireAuth, async (req, res) => {
+  const twitchUserID = req.user.sid;
+  try {
+    const token = await refreshTokenRow(twitchUserID);
+
+    const response = await axios.get("https://api.twitch.tv/helix/streams", {
+      params: { user_id: twitchUserID },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Client-Id": TWITCH_CLIENT_ID,
+      },
+    });
+
+    const stream = response.data?.data?.[0];
+    if (!stream) return res.json({ live: false });
+
+    return res.json({
+      live: true,
+      startedAt: stream.started_at,
+      viewers: stream.viewer_count,
+      title: stream.title,
+      gameName: stream.game_name,
+    });
+  } catch (e) {
+    return res.status(400).json({
+      live: false,
+      error: e?.response?.data?.message || String(e),
+    });
+  }
+});
+
 TwitchRouter.get("/game-art", requireAuth, async (req, res) => {
   const twitchUserID = req.user.sid;
   const gameId = req.query.id;
@@ -110,11 +152,9 @@ TwitchRouter.post("/channel/update", requireAuth, async (req, res) => {
   const twitchUserID = req.user.sid;
   const { title, gameId } = req.body ?? {};
   try {
-    const token = await refreshTokenRow(
-      twitchUserID,
-      TWITCH_CLIENT_ID,
-      TWITCH_CLIENT_SECRET
-    );
+    // refreshTokenRow(tenantId, table) — passing the client id/secret here
+    // made it SELECT ... FROM <client_id>, so every save threw.
+    const token = await refreshTokenRow(twitchUserID);
 
     const payload = {};
     if (title) payload.title = title;

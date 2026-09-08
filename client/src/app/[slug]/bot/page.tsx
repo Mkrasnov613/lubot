@@ -1,18 +1,18 @@
-import NukeWordsSettings from "@/app/[slug]/bot/components/NukeWordsSettings";
-import BotConnectionWindow from "@/app/[slug]/bot/components/BotConnectionWindow";
-import { Flex } from "@chakra-ui/react";
+import { Flex, Heading, Text } from "@chakra-ui/react";
 
 export default async function BotPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = await params;
+  await params;
   // ─── UI ───
   return (
-    <Flex direction="column" align="center" justify="center" gap="5" px="4" py="8" bg="bg">
-      <BotConnectionWindow />
-      <NukeWordsSettings />
+    <Flex direction="column" align="center" justify="center" gap="3" px="4" py="16" bg="bg" color="text">
+      <Heading as="h1" size="lg">
+        Bot
+      </Heading>
+      <Text color="textMuted">This page is being rebuilt.</Text>
     </Flex>
   );
 }

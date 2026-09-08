@@ -25,7 +25,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 const pkg = require("../package.json");
 
-// Rate limiting middleware
 const RateLimit = require("express-rate-limit");
 
 const defaultLimiter = RateLimit({
@@ -36,7 +35,7 @@ const defaultLimiter = RateLimit({
 const app = express();
 const server = http.createServer(app);
 
-const allowedOrigins = [
+export const allowedOrigins = [
   "http://localhost:5173",
   process.env.FRONTEND_BASE_URL,
 ].filter(Boolean);
@@ -70,6 +69,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cookieParser());
+app.use(defaultLimiter);
 app.use("/api/twitch", TwitchRouter);
 app.use("/api/bot", BotRouter);
 app.use("/api/nuke-words", NukeRouter);
@@ -77,7 +77,6 @@ app.use("/api/player", APIRouter);
 app.use("/api/data", dataTenantRouter);
 app.use("/auth/twitch", TwitchAuthRouter);
 app.use("/auth/twitch-bot", TwitchBotAuthRouter);
-app.use(defaultLimiter)
 
 app.get("/version", (_req, res) => {
   res.json({ version: pkg.version, commit: process.env.GIT_SHA || "dev" });

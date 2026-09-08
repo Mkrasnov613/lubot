@@ -5,6 +5,7 @@ import { db } from "../../db/connection.js";
 import { io } from "../../server.js";
 import { startEventSub } from "../../services/eventSub.js";
 import { enableBot } from "../../services/botManager.js";
+import { requireSameOrigin } from "../../middleware/requireSameOrigin.js";
 
 const frontendBaseUrl = (
   process.env.FRONTEND_BASE_URL ?? "https://twitch-website-bot.vercel.app"
@@ -76,7 +77,7 @@ TwitchAuthRouter.get("/callback", async (req, res) => {
       body.toString(),
       {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      }
+      },
     );
     const { access_token, refresh_token, expires_in, token_type } =
       response.data;
@@ -99,7 +100,7 @@ TwitchAuthRouter.get("/callback", async (req, res) => {
     login = excluded.login,
     display_name = excluded.display_name,
     avatar_url = excluded.avatar_url;
-`
+`,
     ).run({
       id: user.id,
       login: user.login,
@@ -119,7 +120,7 @@ TwitchAuthRouter.get("/callback", async (req, res) => {
     refresh_token = excluded.refresh_token,
     access_expires_at = excluded.access_expires_at,
     scope = excluded.scope;
-`
+`,
     ).run({
       id: user.id,
       access_token,
@@ -137,7 +138,7 @@ TwitchAuthRouter.get("/callback", async (req, res) => {
     slug = excluded.slug,
     display_name = excluded.display_name,
     avatar_url = excluded.avatar_url;
-`
+`,
     ).run({
       id: user.id,
       slug: user.login,
@@ -168,4 +169,9 @@ TwitchAuthRouter.get("/callback", async (req, res) => {
     const msg = error.response?.data?.message || error.message || "unknown";
     return res.status(400).send("OAuth failed: " + msg);
   }
+});
+
+TwitchAuthRouter.post("/logout", requireSameOrigin, (req, res) => {
+  res.clearCookie("sid", { path: "/", sameSite: "none", secure: true });
+  return res.json({ ok: true });
 });

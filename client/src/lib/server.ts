@@ -1,11 +1,12 @@
 // lib/server.ts (server-only)
 import { cookies } from "next/headers";
+import { API_BASE_URL } from "@/lib/config";
 
 export async function getTenantAvatar() {
   const sid = (await cookies()).get("sid")?.value;
 
   const r = await fetch(
-    `http://localhost:3000/api/data/tenant?data=avatar_url`,
+    `${API_BASE_URL}/api/data/tenant?data=avatar_url`,
     {
       headers: { cookie: `sid=${sid}` },
       cache: "no-store",
@@ -24,7 +25,7 @@ export async function getTenantAvatar() {
 export async function getTenantSlug() {
   const sid = (await cookies()).get("sid")?.value;
 
-  const r = await fetch(`http://localhost:3000/api/data/tenant?data=slug`, {
+  const r = await fetch(`${API_BASE_URL}/api/data/tenant?data=slug`, {
     headers: { cookie: `sid=${sid}` },
     cache: "no-store",
   });

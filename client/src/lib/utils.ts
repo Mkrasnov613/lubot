@@ -1,4 +1,3 @@
-import { ActivityItem } from "@/app/[slug]/dashboard/page";
 export function formatMin(sec: number) {
   return `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, "0")}`;
 }

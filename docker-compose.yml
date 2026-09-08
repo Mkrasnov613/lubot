@@ -13,7 +13,7 @@ services:
     env_file:
       - .env
     environment:
-      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL:-http://localhost:3001}
+      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL:-http://localhost:5173}
       - TWITCH_CLIENT_ID=${TWITCH_CLIENT_ID}
       - TWITCH_CLIENT_SECRET=${TWITCH_CLIENT_SECRET}
       - TWITCH_REDIRECT_URI=${TWITCH_REDIRECT_URI}

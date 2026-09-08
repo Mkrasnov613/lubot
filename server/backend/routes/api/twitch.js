@@ -1,7 +1,7 @@
 import { Router } from "express";
 import axios from "axios";
 import { requireAuth } from "../../middleware/requireAuth.js";
-import { refreshTokenRow } from "../../lib/twitchTokens.js";
+import { refreshTokenRow } from "../../utils/tokens/broadcaster.js";
 import { chunk } from "../../utils/chunk.js";
 
 export const TwitchRouter = Router();

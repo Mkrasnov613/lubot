@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { requireAuth } from "../../middleware/requireAuth.js";
-import { db } from "../../db.js";
+import { db } from "../../db/connection.js";
 
 export const dataTenantRouter = Router();
 

@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_APP_VERSION: pkg.version,
     NEXT_PUBLIC_GIT_SHA: process.env.GIT_SHA ?? "dev",
   },
+  // yt-search (used by /api/search) pulls in cheerio, which the webpack
+  // build (required for Chakra/Emotion — Turbopack breaks its SSR output)
+  // fails to bundle correctly. Leaving it external makes it a plain
+  // runtime require() instead.
+  serverExternalPackages: ["yt-search", "cheerio"],
   images: {
     remotePatterns: [
       {
@@ -18,6 +23,9 @@ const nextConfig: NextConfig = {
   },
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
+  },
 };
 
 export default nextConfig;

@@ -140,9 +140,9 @@
   --shadow-lg: 0 0 0 1px #9397ab, 0 16px 40px rgba(0, 0, 0, 0.65); /* dialogs */
 
   /* ── App shell metrics (from the redesign) ─────────────────────────────── */
-  --sidebar-w: 224px;
+  --sidebar-w: 296px;
   --sidebar-w-collapsed: 58px;
-  --topbar-h: 52px;
+  --topbar-h: 60px;
   --playerbar-h: 60px;
   --panel-gap: 12px;
   --panel-pad: 14px;

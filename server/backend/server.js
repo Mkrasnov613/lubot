@@ -69,6 +69,7 @@ initPlayer(io);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
+app.use(defaultLimiter);
 app.use(cookieParser());
 app.use("/api/twitch", TwitchRouter);
 app.use("/api/bot", BotRouter);
@@ -77,7 +78,6 @@ app.use("/api/player", APIRouter);
 app.use("/api/data", dataTenantRouter);
 app.use("/auth/twitch", TwitchAuthRouter);
 app.use("/auth/twitch-bot", TwitchBotAuthRouter);
-app.use(defaultLimiter)
 
 app.get("/version", (_req, res) => {
   res.json({ version: pkg.version, commit: process.env.GIT_SHA || "dev" });

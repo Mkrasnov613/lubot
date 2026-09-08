@@ -30,6 +30,7 @@ const buttonRecipe = defineRecipe({
         _hover: { bg: "surface2" },
       },
       ghost: {
+        color: "text",
         _hover: { bg: "surface2" },
       },
       twitch: {

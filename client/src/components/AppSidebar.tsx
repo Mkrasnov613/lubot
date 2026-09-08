@@ -17,13 +17,13 @@ import { useSidebar } from "@/components/SidebarContext";
 import { Box, Flex, IconButton, Text } from "@chakra-ui/react";
 import type { LucideIcon } from "lucide-react";
 
-type NAV_ITEMS = {
+type NavItem = {
   label: string;
   segment: string;
   icon: LucideIcon;
 };
 
-const NAV_ITEMS: NAV_ITEMS[] = [
+const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", segment: "dashboard", icon: LayoutDashboard },
   { label: "Song requests", segment: "music", icon: Music2 },
   { label: "Moderation", segment: "bot", icon: ShieldCheck },

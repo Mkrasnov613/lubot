@@ -65,11 +65,11 @@ export const io = new Server(server, {
 
 initPlayer(io);
 
-app.use(defaultLimiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cookieParser());
+app.use(defaultLimiter);
 app.use("/api/twitch", TwitchRouter);
 app.use("/api/bot", BotRouter);
 app.use("/api/nuke-words", NukeRouter);

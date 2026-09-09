@@ -1,5 +1,5 @@
 import axios from "axios";
-import { db } from "../../db/connection.js";
+import { pool } from "../../db/connection.js";
 
 export function isExpiredOrSoon(expiresAtISO, marginMs = 5 * 60 * 1000) {
   if (!expiresAtISO) return true;
@@ -9,7 +9,11 @@ export function isExpiredOrSoon(expiresAtISO, marginMs = 5 * 60 * 1000) {
 }
 
 export async function refreshTokenRow(tenantId, table = "twitch_tokens") {
-  const row = db.prepare(`SELECT * FROM ${table} WHERE tenant_id = ?`).get(tenantId);
+  const { rows } = await pool.query(
+    `SELECT * FROM ${table} WHERE tenant_id = $1`,
+    [tenantId]
+  );
+  const row = rows[0];
   if (!row) throw new Error(`No token row in ${table} for tenant ${tenantId}`);
 
   if (!isExpiredOrSoon(row.access_expires_at)) return row.access_token;
@@ -30,20 +34,23 @@ export async function refreshTokenRow(tenantId, table = "twitch_tokens") {
   const { access_token, refresh_token, expires_in, scope } = res.data;
   const newExpiresAt = new Date(Date.now() + expires_in * 1000).toISOString();
 
-  db.prepare(`
+  await pool.query(
+    `
     UPDATE ${table}
-    SET access_token = @access_token,
-        refresh_token = @refresh_token,
-        access_expires_at = @access_expires_at,
-        scope = @scope
-    WHERE tenant_id = @tenant_id
-  `).run({
-    tenant_id: tenantId,
-    access_token,
-    refresh_token,
-    access_expires_at: newExpiresAt,
-    scope: Array.isArray(scope) ? scope.join(" ") : (scope ?? ""),
-  });
+    SET access_token = $1,
+        refresh_token = $2,
+        access_expires_at = $3,
+        scope = $4
+    WHERE tenant_id = $5
+  `,
+    [
+      access_token,
+      refresh_token,
+      newExpiresAt,
+      Array.isArray(scope) ? scope.join(" ") : (scope ?? ""),
+      tenantId,
+    ]
+  );
 
   return access_token;
 }

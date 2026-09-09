@@ -9,7 +9,10 @@ import { Box, Flex, Input, Button, Text, chakra } from "@chakra-ui/react";
 type Props = {
   initialTitle: string;
   initialGame: string;
-  updateStream: any; // server action
+  updateStream: (formData: FormData) => Promise<{
+    ok: boolean;
+    message?: string;
+  }>;
 };
 
 type GameItem = { id: string; name: string; boxArtUrl?: string };
@@ -30,11 +33,20 @@ export default function EditStreamMeta({
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
   const [searching, setSearching] = useState(false);
-  const [isSelected, setIsSelected] = useState(false);
   const debouncedQuery = useDebouncedValue(gameName, 300);
 
   const controllerRef = useRef<AbortController | null>(null);
   const listRef = useRef<HTMLUListElement | null>(null);
+
+  /**
+   * Save used to require picking a category from the dropdown, so a
+   * title-only edit could never be submitted. Anything actually changed is
+   * the real condition — a category still has to be picked from the list to
+   * count as changed, because Twitch needs its id, not its name.
+   */
+  const titleChanged = title.trim() !== initialTitle.trim();
+  const gameChanged = gameId !== null && gameName.trim() !== initialGame.trim();
+  const canSave = (titleChanged || gameChanged) && title.trim().length > 0;
 
   // Debounced fetch to internal API
   useEffect(() => {
@@ -82,7 +94,6 @@ export default function EditStreamMeta({
   function pickGame(item: GameItem) {
     setGameName(item.name);
     setGameId(item.id);
-    setIsSelected(true);
     setOpen(false);
   }
 
@@ -109,6 +120,14 @@ export default function EditStreamMeta({
     el?.scrollIntoView({ block: "nearest" });
   }
 
+  function cancel() {
+    setTitle(initialTitle);
+    setGameName(initialGame);
+    setGameId(null);
+    setOpen(false);
+    setEditing(false);
+  }
+
   function onSubmit(formData: FormData) {
     startTransition(async () => {
       formData.set("title", title);
@@ -120,30 +139,39 @@ export default function EditStreamMeta({
       if (result.ok) {
         showToast({
           status: "success",
-          title: "The stream's info was successfully updated",
-          description: `${title} — ${gameName} `,
+          title: "Changes saved",
+          description: title,
         });
         setEditing(false);
       } else {
         showToast({
           status: "error",
-          title: `Failed to update stream: ${result?.message}`,
+          title: "Twitch wouldn't accept the changes",
+          description: result?.message,
         });
-        // keep editing open for correction
+        // Stay in edit mode so the streamer can correct and retry.
       }
     });
   }
 
   if (!editing) {
     return (
-      <Flex align="center" gap="3">
-        <Box>
-          <Box maxW="32.5rem" style={{ wordBreak: "break-word" }}>
-            {title}
-          </Box>
-          <Box color="twitch">{gameName}</Box>
+      <Flex align="flex-start" gap="3" mt="1">
+        <Box minW="0" flex="1">
+          <Text fontSize="sm" color="text" lineClamp={2}>
+            {title || "No title set"}
+          </Text>
+          <Text fontSize="xs" color={gameName ? "signalText" : "faint"} truncate>
+            {gameName || "No category set"}
+          </Text>
         </Box>
-        <Button type="button" onClick={() => setEditing(true)} variant="secondary" size="sm">
+        <Button
+          type="button"
+          onClick={() => setEditing(true)}
+          variant="secondary"
+          size="sm"
+          flexShrink={0}
+        >
           Edit
         </Button>
       </Flex>
@@ -151,132 +179,171 @@ export default function EditStreamMeta({
   }
 
   return (
-    <chakra.form action={onSubmit} display="flex" alignItems="flex-end" gap="2" position="relative">
-      <Box as="label" display="flex" flexDir="column">
-        <Text fontSize="sm" opacity={0.8}>
-          Title
-        </Text>
-        <Input
+    <chakra.form
+      action={onSubmit}
+      display="flex"
+      flexDirection="column"
+      gap="2.5"
+      mt="2"
+      position="relative"
+    >
+      <Field label="Title">
+        <ConsoleInput
           name="title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          bg="surface2"
-          borderWidth="1px"
-          borderColor="border"
-          px="3"
-          py="2"
-          rounded="lg"
-          outline="none"
+          maxLength={140}
+          autoFocus
         />
-      </Box>
+      </Field>
 
-      <Box as="label" display="flex" flexDir="column" position="relative">
-        <Text fontSize="sm" opacity={0.8}>
-          Game
-        </Text>
-        <Input
-          name="game"
-          value={gameName}
-          onChange={(e) => {
-            setGameName(e.target.value);
-            setGameId(null); // reset if user starts typing
-            setOpen(true);
-            setIsSelected(false);
-          }}
-          onKeyDown={onKeyDown}
-          autoComplete="off"
-          bg="surface2"
-          borderWidth="1px"
-          borderColor="border"
-          px="3"
-          py="2"
-          rounded="lg"
-          outline="none"
-        />
-        {/* ensure id is sent if selected */}
-        {gameId && <input type="hidden" name="gameId" value={gameId} />}
+      <Field label="Category">
+        <Box position="relative">
+          <ConsoleInput
+            name="game"
+            value={gameName}
+            onChange={(e) => {
+              setGameName(e.target.value);
+              setGameId(null); // a typed name isn't a category until it's picked
+              setOpen(true);
+            }}
+            onKeyDown={onKeyDown}
+            autoComplete="off"
+            role="combobox"
+            aria-expanded={open}
+            aria-autocomplete="list"
+          />
 
-        {open && results.length > 0 && (
-          <Box
-            as="ul"
-            ref={listRef}
-            position="absolute"
-            top="100%"
-            mt="1"
-            zIndex={20}
-            maxH="10.5rem"
-            w="100%"
-            overflow="auto"
-            rounded="lg"
-            borderWidth="1px"
-            borderColor="border"
-            bg="surface"
-            boxShadow="xl"
-          >
-            {results.map((g, i) => (
-              <Box as="li" key={g.id}>
-                <chakra.button
-                  type="button"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    pickGame(g);
-                  }}
-                  onMouseOver={() => setHighlight(i)}
-                  display="flex"
-                  alignItems="center"
-                  w="100%"
-                  gap="3"
-                  px="3"
-                  py="2"
-                  bg={i === highlight ? "surface2" : undefined}
-                >
-                  {g.boxArtUrl ? (
-                    <img
-                      src={g.boxArtUrl}
-                      alt=""
-                      width={26}
-                      height={36}
-                      style={{ borderRadius: "0.375rem" }}
-                    />
-                  ) : (
-                    <Box w="26px" h="36px" rounded="md" bg="surface2" />
-                  )}
-                  <Text>{g.name}</Text>
-                </chakra.button>
-              </Box>
-            ))}
-          </Box>
-        )}
-        {open && searching && results.length === 0 && (
-          <Box
-            position="absolute"
-            top="100%"
-            mt="1"
-            zIndex={20}
-            w="100%"
-            px="3"
-            py="2"
-            rounded="lg"
-            borderWidth="1px"
-            borderColor="border"
-            bg="surface"
-            boxShadow="xl"
-            fontSize="sm"
-            opacity={0.8}
-          >
-            Searching…
-          </Box>
-        )}
-      </Box>
+          {gameId && <input type="hidden" name="gameId" value={gameId} />}
 
-      <Flex justify="center" align="flex-end" gap="2">
-        <Button type="submit" disabled={!isSelected} variant="twitch" size="md">
-          {isPending ? "Saving…" : "Save"}
+          {open && results.length > 0 && (
+            <Box
+              as="ul"
+              ref={listRef}
+              position="absolute"
+              top="calc(100% + 4px)"
+              left="0"
+              zIndex={20}
+              maxH="220px"
+              w="100%"
+              overflowY="auto"
+              className="scrollbar"
+              rounded="sm"
+              bg="chassis"
+              boxShadow="menu"
+            >
+              {results.map((g, i) => (
+                <Box as="li" key={g.id}>
+                  <chakra.button
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      pickGame(g);
+                    }}
+                    onMouseOver={() => setHighlight(i)}
+                    display="flex"
+                    alignItems="center"
+                    textAlign="left"
+                    w="100%"
+                    gap="2.5"
+                    px="2.5"
+                    py="1.5"
+                    fontSize="sm"
+                    color={i === highlight ? "text" : "engrave"}
+                    bg={i === highlight ? "signalTint" : "transparent"}
+                  >
+                    {g.boxArtUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={g.boxArtUrl}
+                        alt=""
+                        width={24}
+                        height={32}
+                        style={{
+                          borderRadius: "var(--radius-xs)",
+                          flexShrink: 0,
+                        }}
+                      />
+                    ) : (
+                      <Box w="24px" h="32px" rounded="xs" bg="inset" flexShrink={0} />
+                    )}
+                    <Box truncate>{g.name}</Box>
+                  </chakra.button>
+                </Box>
+              ))}
+            </Box>
+          )}
+
+          {open && searching && results.length === 0 && (
+            <Box
+              position="absolute"
+              top="calc(100% + 4px)"
+              left="0"
+              zIndex={20}
+              w="100%"
+              px="2.5"
+              py="1.5"
+              rounded="sm"
+              bg="chassis"
+              boxShadow="menu"
+              fontSize="sm"
+              color="engrave"
+            >
+              Searching Twitch categories
+            </Box>
+          )}
+        </Box>
+      </Field>
+
+      <Flex gap="2" mt="0.5">
+        <Button type="submit" disabled={!canSave || isPending} variant="primary" size="sm">
+          {isPending ? "Saving" : "Save changes"}
         </Button>
-        <Button type="button" onClick={() => setEditing(false)} variant="secondary" size="md">
+        <Button type="button" onClick={cancel} variant="ghost" size="sm">
           Cancel
         </Button>
       </Flex>
     </chakra.form>
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Box as="label" display="block">
+      <Box className="engrave" mb="1">
+        {label}
+      </Box>
+      {children}
+    </Box>
+  );
+}
+
+/** An input set into the chassis: recessed fill, violet edge on focus. */
+function ConsoleInput(props: React.ComponentProps<typeof Input>) {
+  return (
+    <Input
+      bg="inset"
+      borderWidth="1px"
+      borderColor="edge"
+      rounded="sm"
+      h="32px"
+      px="2.5"
+      fontSize="sm"
+      color="text"
+      _placeholder={{ color: "faint" }}
+      _hover={{ borderColor: "faint" }}
+      _focusVisible={{
+        borderColor: "signal",
+        outline: "none",
+        boxShadow: "0 0 0 1px var(--color-signal)",
+      }}
+      {...props}
+    />
   );
 }

@@ -4,14 +4,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect } from "react";
 import { useParams, usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Music2,
-  PanelLeftClose,
-  PanelLeftOpen,
-  ShieldCheck,
-  X,
-} from "lucide-react";
+import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard.js";
+import Music2 from "lucide-react/dist/esm/icons/music-2.js";
+import PanelLeftClose from "lucide-react/dist/esm/icons/panel-left-close.js";
+import PanelLeftOpen from "lucide-react/dist/esm/icons/panel-left-open.js";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check.js";
+import X from "lucide-react/dist/esm/icons/x.js";
 import SideNavFooter from "@/components/SideNavFooter";
 import { useSidebar } from "@/components/SidebarContext";
 import { Box, Flex, IconButton, Text } from "@chakra-ui/react";
@@ -69,7 +67,7 @@ export default function AppSidebar() {
         position="fixed"
         inset="0"
         zIndex="overlay"
-        bg="blackAlpha.600"
+        bg="rgba(10, 11, 13, 0.7)"
         opacity={mobileOpen ? 1 : 0}
         pointerEvents={mobileOpen ? "auto" : "none"}
         transition="opacity 0.2s ease"
@@ -94,72 +92,66 @@ export default function AppSidebar() {
           base: mobileOpen ? "translateX(0)" : "translateX(-100%)",
           md: "none",
         }}
-        transition="transform 0.25s ease"
+        transition="transform 0.22s ease"
         borderRightWidth="1px"
-        borderColor="border"
-        bg="surface"
+        borderColor="edge"
+        bg="chassis"
       >
-        {/* Brand row — same height + divider as AppHeader so the logo
-            lines up with the page title. */}
+        {/* Brand row — matches the header's height and divider so the logo
+            lines up exactly with the page title across the seam. */}
         <Flex
           align="center"
-          gap="3"
+          gap="2.5"
           h="var(--topbar-h)"
-          px={{ base: "4", md: collapsed ? "0" : "4" }}
+          px={{ base: "3", md: collapsed ? "0" : "3" }}
           flexShrink={0}
           borderBottomWidth="1px"
-          borderColor="border"
+          borderColor="edge"
           justify={railJustify}
         >
-          <Flex align="center" gap="3" display={labelDisplay} minW="0">
-            <Image src="/logo.png" width={36} height={36} alt="" />
-            <Text fontWeight="semibold" fontSize="lg" truncate>
+          <Flex align="center" gap="2.5" display={labelDisplay} minW="0">
+            <Image src="/logo.png" width={26} height={26} alt="" />
+            <Text fontWeight="semibold" fontSize="md" truncate>
               LuBot
             </Text>
           </Flex>
 
-          {/* Collapse toggle - desktop */}
+          {/* Collapse toggle — desktop. */}
           <IconButton
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             variant="ghost"
             size="sm"
-            color="textMuted"
             flexShrink={0}
             ml={{ base: "auto", md: collapsed ? "0" : "auto" }}
             hideBelow="md"
-            _hover={{ bg: "surface2", color: "text" }}
             onClick={toggleCollapsed}
           >
             {collapsed ? (
-              <PanelLeftOpen size={18} />
+              <PanelLeftOpen size={16} />
             ) : (
-              <PanelLeftClose size={18} />
+              <PanelLeftClose size={16} />
             )}
           </IconButton>
 
-          {/* Close drawer - mobile. */}
+          {/* Close drawer — mobile. */}
           <IconButton
             aria-label="Close menu"
             variant="ghost"
             size="sm"
-            color="textMuted"
             flexShrink={0}
             ml="auto"
             hideFrom="md"
-            _hover={{ bg: "surface2", color: "text" }}
             onClick={() => setMobileOpen(false)}
           >
-            <X size={24} />
+            <X size={18} />
           </IconButton>
         </Flex>
 
         <Flex
           as="nav"
           direction="column"
-          gap="1"
           flex="1"
-          px="2"
-          py="4"
+          py="2"
           overflowY="auto"
           className="scrollbar"
         >
@@ -171,23 +163,28 @@ export default function AppSidebar() {
                 key={segment}
                 href={href}
                 title={collapsed ? label : undefined}
+                aria-current={isActive ? "page" : undefined}
               >
                 <Flex
                   align="center"
-                  gap="3"
-                  px="2"
-                  py="2.5"
-                  rounded="md"
-                  fontWeight="medium"
+                  gap="2.5"
+                  h="36px"
+                  px="3"
+                  fontSize="sm"
+                  fontWeight={isActive ? "semibold" : "regular"}
                   justify={railJustify}
-                  color={isActive ? "accent" : "text"}
-                  borderColor={"transparent"}
-                  bg={isActive ? "accentEmphasis/50" : "transparent"}
-                  transition="all 0.15s ease"
-                  _hover={isActive ? undefined : { bg: "surface2" }}
+                  borderLeftWidth="2px"
+                  borderLeftColor={isActive ? "signal" : "transparent"}
+                  color={isActive ? "signalText" : "engrave"}
+                  bg={isActive ? "signalTint" : "transparent"}
+                  transition="background-color 0.12s ease, color 0.12s ease"
+                  textDecoration="none"
+                  _hover={
+                    isActive ? undefined : { bg: "tintHover", color: "text" }
+                  }
                 >
                   <Box flexShrink={0} lineHeight="0">
-                    <Icon size={18} />
+                    <Icon size={17} />
                   </Box>
                   <Text display={labelDisplay} truncate>
                     {label}
@@ -198,7 +195,13 @@ export default function AppSidebar() {
           })}
         </Flex>
 
-        <Box px="3" pt="2" pb="5" flexShrink={0}>
+        <Box
+          px={collapsed ? "1" : "2"}
+          py="2"
+          flexShrink={0}
+          borderTopWidth="1px"
+          borderColor="seam"
+        >
           <SideNavFooter slug={slug!.toString()} collapsed={collapsed} />
         </Box>
       </Flex>

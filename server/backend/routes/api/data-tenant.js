@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { requireAuth } from "../../middleware/requireAuth.js";
-import { db } from "../../db/connection.js";
+import { pool } from "../../db/connection.js";
 
 export const dataTenantRouter = Router();
 
-dataTenantRouter.get("/tenant", requireAuth, (req, res) => {
+dataTenantRouter.get("/tenant", requireAuth, async (req, res) => {
   const query = req.query.data;
   const twitchUserID = req.user.sid;
 
@@ -12,19 +12,21 @@ dataTenantRouter.get("/tenant", requireAuth, (req, res) => {
     return res.send(twitchUserID);
   }
 
-  if (query === "slug") {
-    const slug = db
-      .prepare(`SELECT slug FROM tenants WHERE twitch_user_id = ?`)
-      .get(twitchUserID);
-    return res.send(slug);
+  const columns = { slug: "slug", avatar_url: "avatar_url" };
+  const column = columns[query];
+
+  if (!column) {
+    return res.status(400).json({ error: "Unsupported data query" });
   }
 
-  if (query === "avatar_url") {
-    const avatar_url = db
-      .prepare("SELECT avatar_url FROM tenants WHERE twitch_user_id = ?")
-      .get(twitchUserID);
-    return res.send(avatar_url);
+  try {
+    const { rows } = await pool.query(
+      `SELECT ${column} FROM tenants WHERE twitch_user_id = $1`,
+      [twitchUserID]
+    );
+    return res.send(rows[0]);
+  } catch (e) {
+    console.error("[data/tenant] query failed:", e.message);
+    return res.status(500).json({ error: "database unavailable" });
   }
-
-  return res.status(400).json({ error: "Unsupported data query" });
 });

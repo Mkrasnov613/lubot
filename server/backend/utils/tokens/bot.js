@@ -1,4 +1,4 @@
-import { db } from "../../db/connection.js";
+import { pool } from "../../db/connection.js";
 import axios from "axios";
 
 const TWITCH_CLIENT_ID = (process.env.TWITCH_CLIENT_ID || "").trim();
@@ -7,35 +7,44 @@ const TWITCH_CLIENT_SECRET = (process.env.TWITCH_CLIENT_SECRET || "").trim();
 const SEED_ACCESS = process.env.LUBOT_OAUTH_TOKEN || "";
 const SEED_REFRESH = process.env.LUBOT_REFRESH_TOKEN || "";
 
-// Schema owned by utils/initDB.js — see the lubot_tokens table there.
-export function getBotRow() {
-  return db.prepare(`SELECT * FROM lubot_tokens WHERE id = 'global'`).get();
+// Schema owned by db/initDB.js — see the lubot_tokens table there.
+export async function getBotRow() {
+  const { rows } = await pool.query(
+    `SELECT * FROM lubot_tokens WHERE id = 'global'`
+  );
+  return rows[0];
 }
 
-export function saveBotRow({ access_token, refresh_token, expires_in, scope }) {
+export async function saveBotRow({
+  access_token,
+  refresh_token,
+  expires_in,
+  scope,
+}) {
   const expiresAt = new Date(Date.now() + expires_in * 1000).toISOString();
 
-  db.prepare(
+  await pool.query(
     `
     INSERT INTO lubot_tokens (id, access_token, refresh_token, access_expires_at, scope)
-    VALUES ('global', @access_token, @refresh_token, @access_expires_at, @scope)
-    ON CONFLICT(id) DO UPDATE SET
+    VALUES ('global', $1, $2, $3, $4)
+    ON CONFLICT (id) DO UPDATE SET
       access_token = excluded.access_token,
       refresh_token = excluded.refresh_token,
       access_expires_at = excluded.access_expires_at,
       scope = excluded.scope;
-  `
-  ).run({
-    access_token,
-    refresh_token,
-    access_expires_at: expiresAt,
-    scope: Array.isArray(scope) ? scope.join(" ") : String(scope ?? ""),
-  });
+  `,
+    [
+      access_token,
+      refresh_token,
+      expiresAt,
+      Array.isArray(scope) ? scope.join(" ") : String(scope ?? ""),
+    ]
+  );
 }
 
 // Main function: always returns a valid LuBot access token
 export async function getBotAccessToken() {
-  let row = getBotRow();
+  let row = await getBotRow();
 
   if (!row) {
     throw new Error(
@@ -69,7 +78,7 @@ export async function getBotAccessToken() {
     );
 
     const { access_token, refresh_token, expires_in, scope } = resp.data;
-    saveBotRow({ access_token, refresh_token, expires_in, scope });
+    await saveBotRow({ access_token, refresh_token, expires_in, scope });
 
     console.log("🔁 LuBot token refreshed");
     return access_token;

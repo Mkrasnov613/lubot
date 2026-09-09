@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { LogOut } from "lucide-react";
+import LogOut from "lucide-react/dist/esm/icons/log-out.js";
 import { API_BASE_URL } from "@/lib/config";
 import { Flex, Box, IconButton, Text } from "@chakra-ui/react";
 
@@ -56,39 +56,35 @@ export default function SideNavFooter({
   } as const;
 
   return (
-    <Flex
-      direction={{ base: "row", md: collapsed ? "column" : "row" }}
-      justify="flex-start"
-      align="center"
-      gap="3"
-      px="1"
-    >
+    <Flex align="center" justify="center" gap="2.5" px="1" py="1" minW="0">
       {avatarUrl ? (
         <Image
           src={avatarUrl}
-          width={32}
-          height={32}
-          alt="avatar"
+          width={26}
+          height={26}
+          alt=""
           style={{
-            borderRadius: "9999px",
-            alignSelf: "center",
-            boxShadow: "var(--shadow-md)",
+            borderRadius: "var(--radius-xs)",
             flexShrink: 0,
           }}
         />
       ) : (
         <Box
-          w="10"
-          h="10"
-          rounded="full"
-          bg="var(--color-neutral-700)"
-          alignSelf="center"
-          boxShadow="var(--shadow-md)"
+          w="26px"
+          h="26px"
+          rounded="xs"
+          bg="inset"
           flexShrink={0}
-          aria-label="No avatar"
+          aria-hidden="true"
         />
       )}
-      <Text truncate display={detailsDisplay}>
+      <Text
+        display={detailsDisplay}
+        fontSize="sm"
+        color="text"
+        truncate
+        minW="0"
+      >
         {slug}
       </Text>
       <IconButton
@@ -97,9 +93,10 @@ export default function SideNavFooter({
         variant="ghost"
         size="sm"
         ml="auto"
+        flexShrink={0}
         onClick={logout}
       >
-        <LogOut size={16} />
+        <LogOut size={15} />
       </IconButton>
     </Flex>
   );

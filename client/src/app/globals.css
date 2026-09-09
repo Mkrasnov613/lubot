@@ -1,175 +1,171 @@
 /* ============================================================================
-   LuBot design tokens — colors + type
-   Nocturne design system
+   LuBot design tokens — "Console"
+   ----------------------------------------------------------------------------
+   The dashboard is a second-monitor app: the streamer is looking at their game
+   and the screen gets glances, not attention. So it's built like broadcast rack
+   gear — a neutral grey chassis, engraved labels, and light used as signal.
+
+   Four rules the whole system rests on:
+
+     1. The accent is LIGHT, not paint. Twitch violet appears as a lit edge, a
+        focus ring or a lamp. It never fills a large area, so the few things
+        that *are* violet actually pull the eye.
+     2. Red means on air. Nothing else in the app is allowed to be tally red.
+     3. Depth comes from value steps and a lit edge — not drop shadows. Shadows
+        exist only for things that genuinely float above the page (menus,
+        toasts, dialogs).
+     4. Mono means machine syntax: chat commands, regex, overlay URLs, and
+        numbers that change. Never labels.
+
+   Dark only, by design — this is the on-air key and there is no other.
    ========================================================================= */
 
 :root {
-  /* ── Ground & surfaces ─────────────────────────────────────────────────
-     Three steps only. Panels sit on the ground; rows sit back on the ground
-     inside a panel. Never pure black. */
-  --color-bg: #161826; /* app ground */
-  --color-surface: #232532; /* panels, sidebar, player bar, dialogs */
-  --color-surface-2: #292b31; /* nested rows/inputs on a panel (neutral-900) */
-  --color-video: #0b0c14; /* player/overlay preview letterbox only */
+  color-scheme: dark;
 
-  /* ── Text ─────────────────────────────────────────────────────────────── */
-  --color-text: #e9e9ed;
-  --color-text-muted: color-mix(in srgb, var(--color-text) 55%, transparent);
-  --color-text-faint: color-mix(in srgb, var(--color-text) 42%, transparent);
-  --color-text-on-tint: var(--color-accent-100);
+  /* ── Chassis ───────────────────────────────────────────────────────────
+     Neutral greys, deliberately free of blue or violet cast, so the violet
+     accent is the only chroma on screen and reads as signal. Four steps:
+     the gap between panels, the panel face, an inset well, and hover. */
+  --color-ground: #141518; /* app ground — the gap between rack units */
+  --color-chassis: #1d1f23; /* panel face: sidebar, cards, bars */
+  --color-inset: #26292e; /* rows, inputs, wells set INTO a panel */
+  --color-lift: #2f3238; /* hover on an inset row */
+  --color-video: #0a0b0d; /* player letterbox only — true near-black */
 
-  /* ── Accent ────────────────────────────────────────────────────────────
-     One accent, used as a line, a mark and a glow — never as a large fill.
-     For paragraph-size accent text use --color-accent-300, not the base. */
-  --color-accent: #9184d9;
-  --color-accent-2: #a7a1db; /* stand-in; reads as the same role */
+  /* ── Lines ─────────────────────────────────────────────────────────────
+     Two weights. A hairline separates rows inside one panel; the panel edge
+     is a step darker than the chassis, like a machined seam. */
+  --color-edge: #34383f; /* panel edge, input border */
+  --color-seam: #24272b; /* hairline between rows in a panel */
 
-  /* ── Lines ────────────────────────────────────────────────────────────── */
-  --color-divider: color-mix(in srgb, #e9e9ed 16%, transparent);
-  --color-divider-soft: color-mix(in srgb, #e9e9ed 8%, transparent);
+  /* ── Text ──────────────────────────────────────────────────────────────
+     Three levels. `engrave` is the silkscreen on a faceplate: it labels
+     things without competing with values. */
+  --color-text: #e7e9ec;
+  --color-engrave: #99a0a9; /* labels, secondary values — 5.9:1 on chassis */
+  --color-faint: #6d747d; /* timestamps, disabled — 3.6:1, decorative only */
 
-  /* ── Tonal ramps (OKLCH, one shared lightness scale) ───────────────────
-     On this dark ground: 700–900 for tinted fills and borders,
-     500 for the role's base, 100–300 for text on those tints. */
-  --color-neutral-100: #f3f5fe;
-  --color-neutral-200: #e4e7f5;
-  --color-neutral-300: #cfd3e5;
-  --color-neutral-400: #b2b6ca;
-  --color-neutral-500: #9397ab;
-  --color-neutral-600: #75798c;
-  --color-neutral-700: #595d6c;
-  --color-neutral-800: #3f424d;
-  --color-neutral-900: #292b31;
+  /* ── Signal (Twitch violet) ────────────────────────────────────────────
+     One violet for the whole app, and it is Twitch's own. Because the app
+     accent and the Twitch brand are the same hue, nothing competes: violet
+     always means "this is the Twitch-connected, interactive thing."
 
-  --color-accent-100: #f5f4ff;
-  --color-accent-200: #e7e5fe;
-  --color-accent-300: #d2cefd;
-  --color-accent-400: #b5abfc;
-  --color-accent-500: #968ae0;
-  --color-accent-600: #796cbf;
-  --color-accent-700: #5d5294;
-  --color-accent-800: #423a6a;
-  --color-accent-900: #2b2741;
+     Three grades exist because one violet can't do all three jobs at the
+     contrast the dark ground demands:
+       --signal      brand fills + lit edges (do not set text in it)
+       --signal-lit  hover state of a lit edge
+       --signal-text accent TEXT and icons — 7.4:1 on chassis, so it passes
+                     where raw #9146ff (3.9:1) would fail. */
+  --color-signal: #9146ff; /* Twitch brand violet, exact */
+  --color-signal-lit: #a970ff;
+  --color-signal-text: #c9aeff;
 
-  --color-accent-2-100: #f5f4ff;
-  --color-accent-2-200: #e7e5fe;
-  --color-accent-2-300: #d2cefd;
-  --color-accent-2-400: #b5afe8;
-  --color-accent-2-500: #9690c9;
-  --color-accent-2-600: #7972a9;
-  --color-accent-2-700: #5c5783;
-  --color-accent-2-800: #423e5d;
-  --color-accent-2-900: #2b293a;
-
-  /* ── Interaction tints (hover / pressed / active) ──────────────────────── */
-  --tint-accent-hover: color-mix(in srgb, var(--color-accent) 12%, transparent);
-  --tint-accent-active: color-mix(
+  /* Violet as illumination rather than fill: a wash for a selected row, and
+     a glow for the lit top edge of an active panel. */
+  --tint-signal: color-mix(in srgb, var(--color-signal) 16%, transparent);
+  --tint-signal-strong: color-mix(
     in srgb,
-    var(--color-accent) 22%,
+    var(--color-signal) 26%,
     transparent
   );
-  --tint-accent-nav: color-mix(
-    in srgb,
-    var(--color-accent) 15%,
-    transparent
-  ); /* selected nav item */
-  --tint-neutral-hover: color-mix(in srgb, var(--color-text) 7%, transparent);
-  --tint-neutral-active: color-mix(in srgb, var(--color-text) 14%, transparent);
+  --glow-signal: 0 -1px 12px -2px
+    color-mix(in srgb, var(--color-signal) 55%, transparent);
+
+  /* Neutral interaction tints, for everything that isn't selected. */
+  --tint-hover: color-mix(in srgb, var(--color-text) 6%, transparent);
+  --tint-active: color-mix(in srgb, var(--color-text) 12%, transparent);
 
   /* ── Status ────────────────────────────────────────────────────────────
-     Low chroma so the accent stays the only saturated voice. */
-  --color-live: #e0575b; /* the LIVE dot */
-  --color-online: #63c08c; /* bot connected */
-  --color-danger: #e0888b; /* destructive labels (Delete rule) */
-  --color-warning: #d9bb84;
-  --color-twitch: #9146ff; /* Twitch brand — login button and links only */
+     Tally red is reserved: it appears on the live lamp and nowhere else, so
+     that seeing red anywhere on screen means one thing. Destructive actions
+     therefore get coral, which is close enough to read as danger but never
+     sits next to the lamp. */
+  --color-tally: #ff4a3d; /* ON AIR — reserved */
+  --glow-tally: 0 0 10px color-mix(in srgb, var(--color-tally) 70%, transparent);
+  --color-ok: #4fbf87; /* bot connected, saved */
+  --color-warn: #e0a63c;
+  --color-danger: #ff7a6e; /* destructive labels and outlines */
 
   /* ── Type ──────────────────────────────────────────────────────────────
-     One family. Hierarchy is size and space, never weight past 500 on
-     headings; 600 is for interface labels (usernames, nav) only. */
-  --font-heading: var(--font-inter), system-ui, sans-serif;
-  --font-body: var(--font-inter), system-ui, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace; /* commands, regex, URLs */
+     IBM Plex Sans for the interface, IBM Plex Mono for machine syntax. The
+     mono is not decoration: this product is full of literal syntax (!song,
+     regex moderation rules, overlay URLs) and of numbers that tick. Those
+     get mono. Labels never do.
 
-  --font-weight-regular: 400;
-  --font-weight-medium: 500; /* headings, buttons, card titles */
-  --font-weight-semibold: 600; /* chat names, avatars initials */
+     Hierarchy is size and space. Weight is a third lever at most: 500 for
+     anything that acts like a heading, 600 only for names and nav. */
+  --font-ui: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo,
+    monospace;
 
-  /* Display + document scale */
-  --text-display: 58px; /* landing hero only */
-  --text-h1: 42px;
-  --text-h2: 32px;
-  --text-h3: 25px;
-  --text-h4: 20px;
-  --text-h5: 16px;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
 
-  /* Interface scale (what the dashboard actually uses) */
-  --text-xl: 17px; /* screen title, panel heading */
-  --text-lg: 16px; /* now-playing title, channel name */
-  --text-md: 14px; /* base body, inputs, buttons */
-  --text-base: 13px; /* table cells, chat lines, list rows */
-  --text-sm: 12px; /* secondary meta, hints */
-  --text-xs: 11px; /* tags, timestamps, sub-labels */
-  --text-label: 10px; /* uppercase kickers — pair with --tracking-label */
+  /* Type scale, ~1.2 ratio through the interface range and opening up at the
+     display end where there's air to use. */
+  --text-display: 60px; /* landing hero only */
+  --text-h1: 34px;
+  --text-h2: 26px;
+  --text-h3: 20px;
+  --text-xl: 17px; /* screen title */
+  --text-lg: 15px; /* panel heading, channel name */
+  --text-md: 14px; /* body, inputs, buttons */
+  --text-sm: 13px; /* rows, chat lines */
+  --text-xs: 12px; /* meta, hints */
+  --text-2xs: 11px; /* timestamps, chips */
 
-  --leading-tight: 1.12; /* headings */
-  --leading-snug: 1.45;
+  --leading-tight: 1.15;
+  --leading-snug: 1.4;
   --leading-body: 1.55;
 
-  --tracking-display: -0.025em;
+  --tracking-display: -0.03em;
   --tracking-heading: -0.015em;
-  --tracking-label: 0.08em; /* uppercase kickers */
-  --tracking-wide: 0.14em; /* landing eyebrow */
+  --tracking-engrave: 0.06em; /* the one place letterspacing is used */
 
-  /* ── Radius, spacing, elevation ────────────────────────────────────────
-     Density 0.70× — the interface is dense on purpose. */
+  /* ── Geometry ──────────────────────────────────────────────────────────
+     Machined, not pillowy. Nothing in the shell exceeds 8px; the 4px face
+     radius is the house value. */
+  --radius-xs: 3px;
   --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 14px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
   --radius-pill: 999px;
 
-  --space-1: 2.8px;
-  --space-2: 5.6px;
-  --space-3: 8.4px;
-  --space-4: 11.2px;
-  --space-6: 16.8px;
-  --space-8: 22.4px;
+  /* ── Elevation ─────────────────────────────────────────────────────────
+     Only for things that truly float. Panels never get one — see rule 3. */
+  --shadow-menu: 0 8px 24px -6px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--color-edge);
+  --shadow-dialog: 0 24px 60px -12px rgba(0, 0, 0, 0.8),
+    0 0 0 1px var(--color-edge);
 
-  --shadow-sm: 0 0 0 1px #3f424d; /* panels */
-  --shadow-md: 0 0 0 1px #595d6c, 0 6px 18px rgba(0, 0, 0, 0.55); /* toasts, popovers */
-  --shadow-lg: 0 0 0 1px #9397ab, 0 16px 40px rgba(0, 0, 0, 0.65); /* dialogs */
-
-  /* ── App shell metrics (from the redesign) ─────────────────────────────── */
-  --sidebar-w: 296px;
-  --sidebar-w-collapsed: 58px;
-  --topbar-h: 60px;
-  --playerbar-h: 60px;
+  /* ── Shell metrics ─────────────────────────────────────────────────────── */
+  --sidebar-w: 232px;
+  --sidebar-w-collapsed: 56px;
+  --topbar-h: 52px;
   --panel-gap: 12px;
-  --panel-pad: 14px;
+  --panel-pad: 16px;
+}
 
-  /* ── Legacy aliases ───────────────── */
-  --bg-dark: var(--color-bg);
-  --bg: var(--color-surface);
-  --bg-light: var(--color-surface-2);
-  --text: var(--color-text);
-  --text-muted: var(--color-text-muted);
-  --highlight: var(--color-accent-700);
-  --border: var(--color-divider);
-  --border-muted: var(--color-divider-soft);
-  --error: var(--color-danger);
-  --success: var(--color-online);
-  --twitch: var(--color-twitch);
+/* ── Base ─────────────────────────────────────────────────────────────── */
+
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--color-bg);
+  margin: 0;
+  background: var(--color-ground);
   color: var(--color-text);
-  font-family: var(--font-body);
+  font-family: var(--font-ui);
   font-size: var(--text-md);
   line-height: var(--leading-body);
-  font-weight: var(--font-weight-regular);
+  font-weight: var(--weight-regular);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Plex Sans ships proper tabular figures; using them everywhere stops
+     viewer counts and timers from jittering as they tick. */
+  font-variant-numeric: tabular-nums;
 }
 
 h1,
@@ -178,11 +174,11 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-heading);
-  font-weight: var(--font-weight-medium);
+  font-family: var(--font-ui);
+  font-weight: var(--weight-medium);
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-heading);
-  margin: 0 0 var(--space-2);
+  margin: 0;
 }
 h1 {
   font-size: var(--text-h1);
@@ -194,48 +190,68 @@ h3 {
   font-size: var(--text-h3);
 }
 h4 {
-  font-size: var(--text-h4);
-}
-h5 {
-  font-size: var(--text-h5);
-}
-h6 {
-  font-size: var(--text-label);
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-  color: var(--color-text-muted);
+  font-size: var(--text-lg);
 }
 
 a {
-  color: var(--color-accent);
+  color: var(--color-signal-text);
   text-decoration: none;
   text-underline-offset: 3px;
 }
 a:hover {
-  color: var(--color-accent-300);
+  text-decoration: none;
 }
 
 :focus {
   outline: none;
 }
+/* The focus ring is the accent doing its job as light: a violet edge, offset
+   so it reads on both chassis and inset backgrounds. */
 :focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-signal-lit);
   outline-offset: 2px;
+  border-radius: var(--radius-xs);
 }
 ::selection {
-  background: color-mix(in srgb, var(--color-accent) 30%, transparent);
+  background: var(--tint-signal-strong);
 }
 
-/* Monospace runs: chat commands, regex patterns, overlay URLs */
+/* Machine syntax: commands, regex, overlay URLs, ticking numbers. */
 .mono,
 code,
 kbd {
   font-family: var(--font-mono);
   font-size: 0.92em;
+  font-feature-settings: "zero" 1; /* slashed zero — these are values to read */
 }
 
-.shadow-large {
-  box-shadow: 0px 4px 4px #00000030, 0px 12px 12px #00000015;
+/* ── The engraved label ────────────────────────────────────────────────
+   The one structural device in the system. A panel's name is set INTO its
+   top edge like silkscreen on a faceplate, rather than floating above the
+   content as a separate heading. It marks where a panel begins, which is
+   information, and costs no vertical space. */
+.engrave {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-engrave);
+  color: var(--color-engrave);
+}
+
+/* ── Motion ────────────────────────────────────────────────────────────
+   One ambient animation exists in the whole app: the tally lamp's pulse,
+   which earns it by signalling that you are broadcasting right now.
+   Everything else moves only in answer to a click. */
+@keyframes tally-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+.tally-lamp {
+  animation: tally-pulse 2.4s ease-in-out infinite;
 }
 
 @keyframes spin {
@@ -244,35 +260,55 @@ kbd {
   }
 }
 .animate-spin {
-  animation: spin 1s linear infinite;
+  animation: spin 0.9s linear infinite;
 }
 
-@keyframes pulse {
+/* Skeletons breathe on the value axis, not opacity, so they read as an unlit
+   panel rather than a fading one. */
+@keyframes panel-load {
+  0%,
+  100% {
+    background-color: var(--color-inset);
+  }
   50% {
-    opacity: 0.5;
+    background-color: var(--color-lift);
   }
 }
 .animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: panel-load 1.8s ease-in-out infinite;
 }
 
-@layer utilities {
-  .scrollbar::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
   }
+  /* The lamp still has to read as lit when its pulse is switched off. */
+  .tally-lamp {
+    opacity: 1;
+  }
+}
 
-  .scrollbar::-webkit-scrollbar-track {
-    border-radius: 100vh;
-    background: none;
-  }
-
-  .scrollbar::-webkit-scrollbar-thumb {
-    background: var(--bg);
-    border-radius: 100vh;
-  }
-
-  .scrollbar::-webkit-scrollbar-thumb:hover {
-    background: var(--bg-light);
-  }
+/* ── Scrollbars ────────────────────────────────────────────────────────
+   Sized like a fader track: thin, recessed, only visible against content. */
+.scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-edge) transparent;
+}
+.scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-edge);
+  border-radius: var(--radius-pill);
+}
+.scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-faint);
 }

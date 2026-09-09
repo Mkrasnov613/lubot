@@ -1,4 +1,4 @@
-import type { ActivityItem } from "@/app/[slug]/dashboard/page";
+import type { ActivityItem } from "@/components/ActivityFeedComponent";
 import { API_BASE_URL } from "@/lib/config";
 
 const sortByTimeDesc = (a: ActivityItem, b: ActivityItem) =>

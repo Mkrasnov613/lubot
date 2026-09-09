@@ -1,11 +1,13 @@
 import TwitchPlayer from "./TwitchPlayer";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import Image from "next/image";
 import EditStreamMeta from "./EditStreamMeta";
 import { revalidatePath } from "next/cache";
 import { API_BASE_URL } from "@/lib/config";
-import { Box, Flex } from "@chakra-ui/react";
+import { Box, Flex, Text } from "@chakra-ui/react";
+import Panel from "@/components/Panel";
 
 export default async function TwitchChannelComponent({
   slug,
@@ -18,6 +20,11 @@ export default async function TwitchChannelComponent({
     cache: "no-cache",
     headers: { cookie: cookieHeader },
   });
+
+  // Matches the pattern in ActivityFeedComponent: an expired session is a
+  // redirect, not a crash.
+  if (channelRes.status === 401) redirect("/");
+
   const { channel } = await channelRes.json();
 
   // initial game art render
@@ -53,6 +60,15 @@ export default async function TwitchChannelComponent({
 
       const json = await res.json();
 
+      // The route answers { ok: false, message } on a Twitch rejection, and
+      // that used to be reported as success because only throws were caught.
+      if (!res.ok || json?.ok === false) {
+        return {
+          ok: false as const,
+          message: json?.message || `Twitch rejected the update (${res.status})`,
+        };
+      }
+
       return { ok: true as const, message: json.message || "Updated" };
     } catch (e: unknown) {
       return {
@@ -65,37 +81,42 @@ export default async function TwitchChannelComponent({
   }
 
   return (
-    <Flex
-      as="article"
-      className="shadow-large"
-      direction="column"
-      gap="5"
-      minH="400px"
-      minW="520px"
-      p="5"
-      bgGradient="to-b"
-      gradientFrom="surface2"
-      gradientTo="surface"
-      borderWidth="1px"
-      borderColor="border"
-      borderTopColor="highlight"
-      rounded="2xl"
-      alignSelf="flex-start"
-    >
-      <Box display="flex" alignItems="center">
-        <Suspense fallback={""}>
-          <TwitchPlayer slug={slug} />
-        </Suspense>
-      </Box>
-      <Flex gap="5" fontWeight="semibold" justify="flex-start" align="center" color="text">
+    <Panel label="Broadcast" flush>
+      <Suspense fallback={<Box w="100%" aspectRatio="16 / 9" maxH="46vh" bg="video" />}>
+        <TwitchPlayer slug={slug} />
+      </Suspense>
+
+      {/* The meta strip is set into the panel below the player — box art acts
+          as the anchor, the way a channel strip is labelled by its source. */}
+      <Flex
+        gap="3"
+        p="var(--panel-pad)"
+        borderTopWidth="1px"
+        borderColor="seam"
+        align="flex-start"
+        direction='row'
+      >
         {boxArtUrl ? (
-          <Image src={boxArtUrl} width={300} height={300} alt="" style={{ width: "70px", height: "93px" }} />
+          <Image
+            src={boxArtUrl}
+            width={144}
+            height={192}
+            alt=""
+            style={{
+              width: "54px",
+              height: "72px",
+              borderRadius: "var(--radius-xs)",
+              flexShrink: 0,
+            }}
+          />
         ) : (
-          <Box w="85px" h="85px" rounded="md" bg="surface2" />
+          <Box w="54px" h="72px" rounded="xs" bg="inset" flexShrink={0} />
         )}
 
-        <Box display="flex" flexDir="column">
-          <Box fontSize="2xl">{channel?.broadcaster_name}</Box>
+        <Box minW="0" flex="1">
+          <Text fontSize="lg" fontWeight="semibold" truncate>
+            {channel?.broadcaster_name ?? slug}
+          </Text>
           <EditStreamMeta
             initialTitle={channel?.title ?? ""}
             initialGame={channel?.game_name ?? ""}
@@ -103,6 +124,6 @@ export default async function TwitchChannelComponent({
           />
         </Box>
       </Flex>
-    </Flex>
+    </Panel>
   );
 }

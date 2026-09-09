@@ -1,19 +1,29 @@
-import { Box } from "@chakra-ui/react";
+import { Box, Flex } from "@chakra-ui/react";
+import Panel from "@/components/Panel";
 
 export default function TwitchChatSkeleton() {
   return (
-    <Box
-      className="animate-pulse"
-      bg="surface"
-      p="5"
-      rounded="2xl"
-      borderWidth="1px"
-      borderColor="border"
-      maxW="500px"
-      position="relative"
-      zIndex={100}
-    >
-      <Box w="460px" h="682px" bg="surface2" rounded="md" />
-    </Box>
+    <Panel label="Chat" flush>
+      <Flex
+        direction="column"
+        gap="3"
+        p="3"
+        h={{ base: "420px", xl: "calc(100dvh - var(--topbar-h) - 92px)" }}
+      >
+        {/* Uneven widths so it reads as chat lines rather than a form. */}
+        {[86, 64, 92, 51, 78, 70, 58, 88].map((w, i) => (
+          <Flex key={i} gap="2" align="center">
+            <Box
+              className="animate-pulse"
+              w="18px"
+              h="18px"
+              rounded="xs"
+              flexShrink={0}
+            />
+            <Box className="animate-pulse" h="10px" w={`${w}%`} rounded="xs" />
+          </Flex>
+        ))}
+      </Flex>
+    </Panel>
   );
 }

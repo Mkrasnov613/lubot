@@ -15,7 +15,7 @@ import { API_BASE_URL } from "@/lib/config";
 */}
 type EventSubMessage = {
   type: string; // e.g. "stream.online"
-  event: any;
+  event: unknown;
 };
 
 export function useEventSub(url = API_BASE_URL) {

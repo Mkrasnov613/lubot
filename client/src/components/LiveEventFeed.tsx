@@ -6,7 +6,9 @@ import Image from "next/image";
 import { timeAgo } from "@/lib/utils";
 import { ActivityItem } from "@/components/ActivityFeedComponent";
 import { API_BASE_URL } from "@/lib/config";
-import { Box, Flex } from "@chakra-ui/react";
+import { Badge, Box, Flex, Text } from "@chakra-ui/react";
+import Panel from "@/components/Panel";
+
 type EventSubPayload =
   | {
       type: "channel.follow";
@@ -25,7 +27,7 @@ type EventSubPayload =
     }
   | {
       type: string;
-      event: any;
+      event: Record<string, unknown>;
       occurred_at?: string;
     };
 
@@ -35,6 +37,12 @@ export default function LiveEventFeed({
   initialData: ActivityItem[];
 }) {
   const [items, setItems] = useState<ActivityItem[]>(initialData);
+  /**
+   * The most recent arrival since this page loaded gets a lit edge. It's
+   * state, not an animation — it stays until something newer lands, so a
+   * glance from across the room still shows what just happened.
+   */
+  const [newestId, setNewestId] = useState<string | null>(null);
 
   const socketUrl = useMemo(() => API_BASE_URL, []);
 
@@ -46,38 +54,49 @@ export default function LiveEventFeed({
 
     socket.on("twitch:event", (p: EventSubPayload) => {
       if (p.type === "channel.follow") {
-        const { user_id, user_name, followed_at } = p.event;
+        const { user_id, user_name, followed_at } = p.event as {
+          user_id: string;
+          user_name: string;
+          followed_at: string;
+        };
 
         const occurred_at =
           followed_at || p.occurred_at || new Date().toISOString();
+        const id = `follow:${user_id}:${occurred_at}`;
 
         pushActivityItem(
           {
-            id: `follow:${user_id}:${occurred_at}`,
+            id,
             user_id,
             user_name,
             type: "follow",
             occurred_at,
           },
-          setItems
+          setItems,
         );
+        setNewestId(id);
       }
 
       if (p.type === "channel.subscribe") {
-        const { user_id, user_name } = p.event;
+        const { user_id, user_name } = p.event as {
+          user_id: string;
+          user_name: string;
+        };
 
         const occurred_at = p.occurred_at || new Date().toISOString();
+        const id = `sub:${user_id}:${occurred_at}`;
 
         pushActivityItem(
           {
-            id: `sub:${user_id}:${occurred_at}`,
+            id,
             user_id,
             user_name,
             type: "sub",
             occurred_at,
           },
-          setItems
+          setItems,
         );
+        setNewestId(id);
       }
     });
 
@@ -87,70 +106,86 @@ export default function LiveEventFeed({
   }, [socketUrl]);
 
   return (
-    <Box
-      className="scrollbar"
-      display="flex"
-      rounded="xl"
-      p="3"
-      mb="4"
-      w="27.5rem"
-      h="31.25rem"
-      scrollBehavior="smooth"
-      overflowX="hidden"
+    <Panel
+      label="Activity"
+      flush
+      action={
+        items.length > 0 ? (
+          <Text className="mono" fontSize="2xs" color="engrave">
+            {items.length}
+          </Text>
+        ) : null
+      }
     >
-      <Flex as="ul" direction="column" gap="5" align="center">
-        {items.map((item) => (
-          <Flex
-            as="li"
-            key={item.id}
-            position="relative"
-            rounded="xl"
-            bgGradient="to-b"
-            gradientFrom="surface2"
-            gradientTo="surface"
-            borderWidth="1px"
-            borderColor="border"
-            p="2"
-            h="20"
-            gap="5"
-            minW="25rem"
-          >
-            <Image
-              src={item.profile_image_url || "/default-avatar.png"}
-              width={64}
-              height={64}
-              title={item.user_name}
-              alt={item.user_name}
-              style={{ borderRadius: "9999px" }}
-            />
-            <Flex direction="column" justify="center">
-              <Flex fontWeight="bold" color="twitch" align="center" gap="2">
-                {item.user_name}
-                <Box
-                  as="span"
-                  px="2"
-                  py="0.5"
-                  rounded="full"
-                  fontSize="10px"
-                  textTransform="uppercase"
-                  letterSpacing="wide"
-                  bg="color-mix(in srgb, var(--color-surface-2) 70%, transparent)"
+      {items.length === 0 ? (
+        <Flex
+          direction="column"
+          align="flex-start"
+          gap="1"
+          p="var(--panel-pad)"
+        >
+          <Text fontSize="sm" color="text">
+            Nothing yet today
+          </Text>
+          <Text fontSize="xs" color="engrave">
+            Follows and subs land here the moment they happen.
+          </Text>
+        </Flex>
+      ) : (
+        <Box
+          as="ul"
+          maxH="340px"
+          overflowY="auto"
+          className="scrollbar"
+          listStyleType="none"
+        >
+          {items.map((item) => {
+            const isNewest = item.id === newestId;
+            return (
+              <Flex
+                as="li"
+                key={item.id}
+                align="center"
+                gap="2.5"
+                px="3"
+                py="2"
+                borderBottomWidth="1px"
+                borderColor="seam"
+                borderLeftWidth="2px"
+                borderLeftColor={isNewest ? "signal" : "transparent"}
+                bg={isNewest ? "signalTint" : "transparent"}
+                _last={{ borderBottomWidth: 0 }}
+              >
+                <Image
+                  src={item.profile_image_url || "/default-avatar.png"}
+                  width={28}
+                  height={28}
+                  alt=""
+                  style={{
+                    borderRadius: "var(--radius-xs)",
+                    flexShrink: 0,
+                  }}
+                />
+                <Text fontSize="sm" fontWeight="semibold" truncate minW="0">
+                  {item.user_name}
+                </Text>
+                <Badge tone={item.type === "sub" ? "signal" : "neutral"}>
+                  {item.type === "sub" ? "Sub" : "Follow"}
+                </Badge>
+                <Text
+                  className="mono"
+                  fontSize="2xs"
+                  color="faint"
+                  ml="auto"
+                  flexShrink={0}
                 >
-                  {item.type === "follow" ? "Follow" : "Sub"}
-                </Box>
+                  {timeAgo(item.occurred_at)}
+                </Text>
               </Flex>
-            </Flex>
-            <Box position="absolute" top="3" right="5" fontSize="xs" opacity={0.7}>
-              {timeAgo(item.occurred_at)}
-            </Box>
-          </Flex>
-        ))}
-        {items.length === 0 && (
-          <Box as="li" fontSize="xs" opacity={0.7}>
-            No activity yet. Waiting for events…
-          </Box>
-        )}
-      </Flex>
-    </Box>
+            );
+          })}
+        </Box>
+      )}
+    </Panel>
   );
 }

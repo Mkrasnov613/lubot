@@ -1,39 +1,42 @@
 import { Box, Flex } from "@chakra-ui/react";
+import Panel from "@/components/Panel";
 
 export default function LiveEventFeedSkeleton() {
   return (
-    <Box className="scrollbar" rounded="xl" p="3" overflowX="scroll" w="100%" scrollBehavior="smooth">
-      <Flex gap="4" align="center">
-        {[1, 2, 3, 4, 5].map((i) => (
+    <Panel label="Activity" flush>
+      <Box as="ul" listStyleType="none">
+        {[0, 1, 2, 3].map((i) => (
           <Flex
             key={i}
-            className="animate-pulse"
-            position="relative"
-            rounded="xl"
-            bgGradient="to-b"
-            gradientFrom="surface2"
-            gradientTo="surface"
-            borderWidth="1px"
-            borderColor="border"
-            p="2"
-            h="20"
-            gap="5"
-            minW="25rem"
+            as="li"
+            align="center"
+            gap="2.5"
+            px="3"
+            py="2"
+            borderBottomWidth="1px"
+            borderColor="seam"
+            borderLeftWidth="2px"
+            borderLeftColor="transparent"
+            _last={{ borderBottomWidth: 0 }}
           >
-            {/* Profile image skeleton */}
-            <Box w="16" h="16" rounded="full" bg="surface2" />
-
-            {/* User info skeleton */}
-            <Flex direction="column" justify="center" gap="2">
-              <Box h="4" w="32" bg="surface2" rounded="md" />
-              <Box h="3" w="20" bg="surface2" rounded="md" />
-            </Flex>
-
-            {/* Time skeleton */}
-            <Box position="absolute" top="3" right="5" h="3" w="12" bg="surface2" rounded="md" />
+            <Box
+              className="animate-pulse"
+              w="28px"
+              h="28px"
+              rounded="xs"
+              flexShrink={0}
+            />
+            <Box className="animate-pulse" h="11px" w="120px" rounded="xs" />
+            <Box
+              className="animate-pulse"
+              h="10px"
+              w="40px"
+              rounded="xs"
+              ml="auto"
+            />
           </Flex>
         ))}
-      </Flex>
-    </Box>
+      </Box>
+    </Panel>
   );
 }

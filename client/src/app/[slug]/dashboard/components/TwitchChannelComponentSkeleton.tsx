@@ -1,41 +1,29 @@
 import { Box, Flex } from "@chakra-ui/react";
+import Panel from "@/components/Panel";
 
+/**
+ * The panel arrives before its contents do — same chassis, same label, with
+ * unlit wells where the values will be. Nothing about the frame moves, so the
+ * layout doesn't jump when the data lands.
+ */
 export default function TwitchChannelComponentSkeleton() {
   return (
-    <Flex
-      as="article"
-      className="shadow-large animate-pulse"
-      direction="column"
-      gap="5"
-      minH="400px"
-      w="760px"
-      p="5"
-      bgGradient="to-b"
-      gradientFrom="surface2"
-      gradientTo="surface"
-      borderWidth="1px"
-      borderColor="border"
-      borderTopColor="highlight"
-      rounded="2xl"
-      alignSelf="flex-end"
-    >
-      {/* TwitchPlayer skeleton */}
-      <Box display="flex" alignItems="center">
-        <Box w="100%" h="480px" bg="surface2" rounded="lg" />
-      </Box>
-
-      {/* Channel info skeleton */}
-      <Flex gap="5" fontWeight="semibold" justify="flex-start" align="center" color="text">
-        {/* Box art skeleton */}
-        <Box w="70px" h="93px" rounded="md" bg="surface2" />
-
-        {/* Channel name and meta skeleton */}
-        <Flex direction="column" gap="2">
-          <Box h="7" w="48" bg="surface2" rounded="md" />
-          <Box h="5" w="64" bg="surface2" rounded="md" />
-          <Box h="5" w="52" bg="surface2" rounded="md" mt="1" />
+    <Panel label="Broadcast" flush>
+      <Box w="100%" aspectRatio="16 / 9" maxH="46vh" bg="video" />
+      <Flex
+        gap="3"
+        p="var(--panel-pad)"
+        borderTopWidth="1px"
+        borderColor="seam"
+        align="flex-start"
+      >
+        <Box className="animate-pulse" w="54px" h="72px" rounded="xs" flexShrink={0} />
+        <Flex direction="column" gap="2" flex="1" pt="1">
+          <Box className="animate-pulse" h="14px" w="180px" rounded="xs" />
+          <Box className="animate-pulse" h="12px" w="min(320px, 90%)" rounded="xs" />
+          <Box className="animate-pulse" h="10px" w="120px" rounded="xs" />
         </Flex>
       </Flex>
-    </Flex>
+    </Panel>
   );
 }

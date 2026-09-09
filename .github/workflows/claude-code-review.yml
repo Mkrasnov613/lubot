@@ -31,6 +31,15 @@ jobs:
         with:
           fetch-depth: 1
 
+      # `claude install` warns that ~/.local/bin is missing, fails to place the
+      # binary there, then exits 0 anyway; the action trusts that exit code and
+      # spawns the path when adding the plugin marketplace, so the job dies with
+      # ENOENT on /home/runner/.local/bin/claude. Creating the directory up front
+      # gives the installer somewhere to land.
+      # https://github.com/anthropics/claude-code-action/issues/1290
+      - name: Ensure local bin exists
+        run: mkdir -p ~/.local/bin
+
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@v1

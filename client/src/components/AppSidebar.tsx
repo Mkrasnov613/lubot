@@ -4,14 +4,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect } from "react";
 import { useParams, usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Music2,
-  PanelLeftClose,
-  PanelLeftOpen,
-  ShieldCheck,
-  X,
-} from "lucide-react";
+import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard.js";
+import Music2 from "lucide-react/dist/esm/icons/music-2.js";
+import PanelLeftClose from "lucide-react/dist/esm/icons/panel-left-close.js";
+import PanelLeftOpen from "lucide-react/dist/esm/icons/panel-left-open.js";
+import ShieldCheck from "lucide-react/dist/esm/icons/shield-check.js";
+import X from "lucide-react/dist/esm/icons/x.js";
 import SideNavFooter from "@/components/SideNavFooter";
 import { useSidebar } from "@/components/SidebarContext";
 import { Box, Flex, IconButton, Text } from "@chakra-ui/react";
@@ -167,9 +165,6 @@ export default function AppSidebar() {
                 title={collapsed ? label : undefined}
                 aria-current={isActive ? "page" : undefined}
               >
-                {/* Selected state is a lit left edge, the way an active
-                    channel strip lights on a mixer — not a filled pill. The
-                    border is always present so nothing shifts on selection. */}
                 <Flex
                   align="center"
                   gap="2.5"
@@ -183,6 +178,7 @@ export default function AppSidebar() {
                   color={isActive ? "signalText" : "engrave"}
                   bg={isActive ? "signalTint" : "transparent"}
                   transition="background-color 0.12s ease, color 0.12s ease"
+                  textDecoration="none"
                   _hover={
                     isActive ? undefined : { bg: "tintHover", color: "text" }
                   }

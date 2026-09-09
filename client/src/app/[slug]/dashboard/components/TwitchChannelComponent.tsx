@@ -94,6 +94,7 @@ export default async function TwitchChannelComponent({
         borderTopWidth="1px"
         borderColor="seam"
         align="flex-start"
+        direction='row'
       >
         {boxArtUrl ? (
           <Image

@@ -46,7 +46,7 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
-initDB();
+await initDB();
 
 app.use(cors(corsOptions));
 export const io = new Server(server, {

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import axios from "axios";
 import { signSession, verifySession } from "../../utils/session.js";
-import { db } from "../../db/connection.js";
+import { pool } from "../../db/connection.js";
 import { io } from "../../server.js";
 import { startEventSub } from "../../services/eventSub.js";
 import { enableBot } from "../../services/botManager.js";
@@ -92,59 +92,52 @@ TwitchAuthRouter.get("/callback", async (req, res) => {
     const user = userResponse.data.data[0];
 
     // Save user info
-    db.prepare(
+    await pool.query(
       `
   INSERT INTO users (twitch_user_id, login, display_name, avatar_url)
-  VALUES (@id, @login, @display_name, @avatar_url)
-  ON CONFLICT(twitch_user_id) DO UPDATE SET
+  VALUES ($1, $2, $3, $4)
+  ON CONFLICT (twitch_user_id) DO UPDATE SET
     login = excluded.login,
     display_name = excluded.display_name,
     avatar_url = excluded.avatar_url;
 `,
-    ).run({
-      id: user.id,
-      login: user.login,
-      display_name: user.display_name,
-      avatar_url: user.profile_image_url ?? null,
-    });
+      [user.id, user.login, user.display_name, user.profile_image_url ?? null],
+    );
 
     // Save tokens
     const expiresAt = new Date(Date.now() + expires_in * 1000).toISOString();
 
-    db.prepare(
+    await pool.query(
       `
   INSERT INTO twitch_tokens (tenant_id, access_token, refresh_token, access_expires_at, scope)
-  VALUES (@id, @access_token, @refresh_token, @access_expires_at, @scope)
-  ON CONFLICT(tenant_id) DO UPDATE SET
+  VALUES ($1, $2, $3, $4, $5)
+  ON CONFLICT (tenant_id) DO UPDATE SET
     access_token = excluded.access_token,
     refresh_token = excluded.refresh_token,
     access_expires_at = excluded.access_expires_at,
     scope = excluded.scope;
 `,
-    ).run({
-      id: user.id,
-      access_token,
-      refresh_token,
-      access_expires_at: expiresAt,
-      scope: "", // add your scopes later if needed
-    });
+      [
+        user.id,
+        access_token,
+        refresh_token,
+        expiresAt,
+        "", // add your scopes later if needed
+      ],
+    );
 
     // Save tenant (streamer)
-    db.prepare(
+    await pool.query(
       `
   INSERT INTO tenants (twitch_user_id, slug, display_name, avatar_url)
-  VALUES (@id, @slug, @display_name, @avatar_url)
-  ON CONFLICT(twitch_user_id) DO UPDATE SET
+  VALUES ($1, $2, $3, $4)
+  ON CONFLICT (twitch_user_id) DO UPDATE SET
     slug = excluded.slug,
     display_name = excluded.display_name,
     avatar_url = excluded.avatar_url;
 `,
-    ).run({
-      id: user.id,
-      slug: user.login,
-      display_name: user.display_name,
-      avatar_url: user.profile_image_url ?? null,
-    });
+      [user.id, user.login, user.display_name, user.profile_image_url ?? null],
+    );
 
     startEventSub(io, user.id);
 

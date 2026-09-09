@@ -5,21 +5,25 @@
 // commands) was removed and is pending a rebuild — do not add message handling
 // back here without revisiting that design.
 import tmi from "tmi.js";
-import { db } from "../db/connection.js";
+import { pool } from "../db/connection.js";
 import { getBotAccessToken } from "../utils/tokens/bot.js";
 
 const conns = new Map(); // tenantId -> tmi.Client
 
-function getTenantLogin(tenantId) {
-  return db
-    .prepare(`SELECT slug FROM tenants WHERE twitch_user_id = ?`)
-    .get(tenantId);
+async function getTenantLogin(tenantId) {
+  const { rows } = await pool.query(
+    `SELECT slug FROM tenants WHERE twitch_user_id = $1`,
+    [tenantId]
+  );
+  return rows[0];
 }
 
-function getBroadcasterLoginFallback(tenantId) {
-  return db
-    .prepare(`SELECT login FROM users WHERE twitch_user_id = ?`)
-    .get(tenantId);
+async function getBroadcasterLoginFallback(tenantId) {
+  const { rows } = await pool.query(
+    `SELECT login FROM users WHERE twitch_user_id = $1`,
+    [tenantId]
+  );
+  return rows[0];
 }
 
 export async function enableBot(tenantId) {
@@ -27,8 +31,8 @@ export async function enableBot(tenantId) {
 
   const botToken = await getBotAccessToken();
 
-  const tenant = getTenantLogin(tenantId);
-  const broadcaster = getBroadcasterLoginFallback(tenantId);
+  const tenant = await getTenantLogin(tenantId);
+  const broadcaster = await getBroadcasterLoginFallback(tenantId);
 
   const channelLogin = (
     tenant?.slug ||

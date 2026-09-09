@@ -96,6 +96,8 @@ evaluated before any of the importing file's own statements run, so other server
 if `dotenv.config()` ran later in `server.js` instead of in a dedicated first-imported module. If
 you add a new module that reads `process.env` at module load time (not inside a function), this is
 why it needs `env.js` to already have run — don't add another scattered `dotenv.config()` call.
+`db/connection.js` is now one of those modules: it reads `DATABASE_URL` at load and throws if it's
+missing, so a boot with no `.env` fails immediately and loudly rather than at the first query.
 
 Client reads `NEXT_PUBLIC_API_URL` (see `client/.env.example`) via `client/src/lib/config.ts`'s
 `API_BASE_URL` — always import that instead of hardcoding a server URL or adding a new `fetch`
@@ -157,11 +159,60 @@ Twitch's EventSub, forwarding notifications into the `/eventsub` Socket.IO names
 only via the initial `/api/twitch/followers` fetch, and going offline needs a page reload. Adding
 either one means adding a `createSub` call server-side first.
 
-**Database**: SQLite via `better-sqlite3`, one file (`server/data/bot.db`), WAL mode. Schema is
-owned entirely by `server/backend/db/initDB.js` — `CREATE TABLE IF NOT EXISTS` run once at boot,
-no migration framework. Keep it that way: this file used to have a second, conflicting definition
-of `lubot_tokens` duplicated in the bot-token module (different primary key), which only "worked"
-by import order luck. Don't reintroduce a `CREATE TABLE` for an existing table outside `initDB.js`.
+**Database**: Postgres on [Neon](https://neon.tech) via `pg`, reached through the `DATABASE_URL`
+connection string. `server/backend/db/connection.js` exports a `pg` **`Pool`** named `pool` — every
+query is `await pool.query(sql, params)` with `$1`-style positional placeholders, returning
+`{ rows }` (so a single-row read is `rows[0]`). This used to be SQLite via `better-sqlite3`, whose
+API was *synchronous*; if you find a code sample or comment implying a DB call returns a row
+directly, it predates the migration.
+
+Two things the remote DB changes that a local file didn't: every query can fail on the network, and
+Neon **autosuspends** its compute after a few minutes idle (the next query wakes it, ~300–900 ms).
+So fire-and-forget query paths must not be allowed to reject — see the `try`/`continue` around the
+sweep query in `utils/tokenScheduler.js`, which runs on a timer with nothing awaiting it.
+
+`connection.js` rewrites `sslmode=require` in the URL to `verify-full` on purpose. `pg` merges a
+connection string *over* the explicit config (`Object.assign({}, config, parse(connectionString))`
+in its `connection-parameters.js`), so an `ssl:` option passed to the `Pool` is silently ignored
+whenever the URL sets `sslmode` — the URL is the only place TLS policy can be set. Don't "fix" this
+by adding `ssl: { rejectUnauthorized: false }`; it wouldn't take effect, and Neon's certificate
+verifies cleanly.
+
+Schema is owned entirely by `server/backend/db/initDB.js` — `CREATE TABLE IF NOT EXISTS` run once at
+boot (now `async`, and `await`ed in `server.js`), no migration framework. Keep it that way: this
+file used to have a second, conflicting definition of `lubot_tokens` duplicated in the bot-token
+module (different primary key), which only "worked" by import order luck. Don't reintroduce a
+`CREATE TABLE` for an existing table outside `initDB.js`.
+
+The token tables store `access_expires_at` as **`TEXT`**, not a timestamp type: every writer stores
+`new Date(...).toISOString()` and every reader does `new Date(row.access_expires_at)`, so the ISO
+string round-trips verbatim. Only the `created_at` columns, which nothing reads back, are
+`TIMESTAMPTZ`.
+
+**Two Neon branches**, in project `lubot-db` (`late-grass-65957101`, eu-central-1, Postgres 18):
+
+| Branch | Endpoint host | Used by |
+| --- | --- | --- |
+| `production` (default) | `ep-sweet-tree-b2ygifl7-pooler…` | the deployed server |
+| `dev` (child of `production`) | `ep-tiny-mouse-b2z9q1v9-pooler…` | local `npm run dev` |
+
+A Neon branch is a copy-on-write clone, so `dev` started as a full copy of production's data and
+then diverged. **Nothing in the code selects a branch** — the endpoint host inside `DATABASE_URL`
+is the only switch, and both branches share the same role and password, so moving between them is
+a hostname swap and nothing else. That also means a `DATABASE_URL` pasted straight from the Neon
+dashboard's default view points at `production`; check the host before using it locally, because
+the mistake is silent and writes real streamer OAuth tokens.
+
+To refresh `dev` with current production data, reset it from its parent (Neon console → Branches →
+`dev` → Reset from parent), which discards local changes. Don't hand-copy rows between branches.
+
+`docs/neon-migration.md` records how the migration was done, including the one-off SQLite→Neon copy
+script, if you ever need to redo it for another environment.
+
+`neon.ts` at the repo root is Neon CLI config, not something the server reads. Its branch policy
+gives any **new non-default branch a 7-day TTL** — fine for throwaway `neon checkout` branches, but
+it means a `dev` branch recreated through the CLI would auto-delete after a week. The current `dev`
+was made in the console and has no expiry.
 
 ## Client design system — "Console"
 

@@ -1,13 +1,17 @@
-import { db } from "./connection.js";
+import { pool } from "./connection.js";
 
-export function initDB() {
+export async function initDB() {
+  // `access_expires_at` stays TEXT on purpose: every writer stores
+  // `new Date(...).toISOString()` and every reader does `new Date(row.…)`, so
+  // round-tripping the ISO string verbatim avoids a timezone-parsing change.
+  // Only the `created_at` columns, which nothing reads back, become timestamps.
   const schema = `
   CREATE TABLE IF NOT EXISTS users (
     twitch_user_id TEXT PRIMARY KEY,
     login TEXT,
     display_name TEXT,
     avatar_url TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT now()
   );
 
   CREATE TABLE IF NOT EXISTS tenants (
@@ -15,7 +19,7 @@ export function initDB() {
     slug TEXT UNIQUE,
     display_name TEXT,
     avatar_url TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT now()
   );
 
   -- id is always the literal string 'global': one shared bot account for
@@ -29,10 +33,10 @@ export function initDB() {
   );
 
   CREATE TABLE IF NOT EXISTS nuke_words (
-    id INTEGER PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     broadcaster_id TEXT NOT NULL,
     word TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   );
 
   CREATE INDEX IF NOT EXISTS idx_nuke_words_broadcaster
@@ -42,11 +46,11 @@ export function initDB() {
     tenant_id TEXT PRIMARY KEY,
     access_token TEXT,
     refresh_token TEXT,
-    access_expires_at DATETIME,
+    access_expires_at TEXT,
     scope TEXT
   );
   `;
 
-  db.exec(schema);
+  await pool.query(schema);
   console.log("✅ Database initialized");
 }

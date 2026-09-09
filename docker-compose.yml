@@ -20,6 +20,5 @@ services:
       - LUBOT_OAUTH_TOKEN=${LUBOT_OAUTH_TOKEN}
       - LUBOT_REFRESH_TOKEN=${LUBOT_REFRESH_TOKEN}
       - JSON_WEB_TOKEN=${JSON_WEB_TOKEN}
-    volumes:
-      - ./server/data:/app/server/data
+      - DATABASE_URL=${DATABASE_URL}
     restart: unless-stopped

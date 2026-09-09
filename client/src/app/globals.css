@@ -64,8 +64,13 @@
   /* Violet as illumination rather than fill: a wash for a selected row, and
      a glow for the lit top edge of an active panel. */
   --tint-signal: color-mix(in srgb, var(--color-signal) 16%, transparent);
-  --tint-signal-strong: color-mix(in srgb, var(--color-signal) 26%, transparent);
-  --glow-signal: 0 -1px 12px -2px color-mix(in srgb, var(--color-signal) 55%, transparent);
+  --tint-signal-strong: color-mix(
+    in srgb,
+    var(--color-signal) 26%,
+    transparent
+  );
+  --glow-signal: 0 -1px 12px -2px
+    color-mix(in srgb, var(--color-signal) 55%, transparent);
 
   /* Neutral interaction tints, for everything that isn't selected. */
   --tint-hover: color-mix(in srgb, var(--color-text) 6%, transparent);
@@ -130,8 +135,7 @@
 
   /* ── Elevation ─────────────────────────────────────────────────────────
      Only for things that truly float. Panels never get one — see rule 3. */
-  --shadow-menu: 0 8px 24px -6px rgba(0, 0, 0, 0.7),
-    0 0 0 1px var(--color-edge);
+  --shadow-menu: 0 8px 24px -6px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--color-edge);
   --shadow-dialog: 0 24px 60px -12px rgba(0, 0, 0, 0.8),
     0 0 0 1px var(--color-edge);
 
@@ -195,7 +199,7 @@ a {
   text-underline-offset: 3px;
 }
 a:hover {
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 :focus {

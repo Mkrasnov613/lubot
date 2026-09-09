@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { LogOut } from "lucide-react";
+import LogOut from "lucide-react/dist/esm/icons/log-out.js";
 import { API_BASE_URL } from "@/lib/config";
 import { Flex, Box, IconButton, Text } from "@chakra-ui/react";
 
@@ -56,7 +56,7 @@ export default function SideNavFooter({
   } as const;
 
   return (
-    <Flex align="center" gap="2.5" px="1" py="1" minW="0">
+    <Flex align="center" justify="center" gap="2.5" px="1" py="1" minW="0">
       {avatarUrl ? (
         <Image
           src={avatarUrl}

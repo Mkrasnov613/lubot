@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import Menu from "lucide-react/dist/esm/icons/menu.js";
 import { Flex, Heading, IconButton } from "@chakra-ui/react";
 import { appRoutes } from "@/lib/appRoutes";
 import { useSidebar } from "@/components/SidebarContext";

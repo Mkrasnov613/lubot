@@ -1,6 +1,11 @@
 import { Router } from "express";
 import axios from "axios";
-import { signSession, verifySession } from "../../utils/session.js";
+import {
+  signSession,
+  sessionCookieOptions,
+  clearSessionCookieOptions,
+  oauthStateCookieOptions,
+} from "../../utils/session.js";
 import { pool } from "../../db/connection.js";
 import { io } from "../../server.js";
 import { startEventSub } from "../../services/eventSub.js";
@@ -24,12 +29,7 @@ TwitchAuthRouter.get("/login", (req, res) => {
     "channel:manage:broadcast moderator:read:followers channel:read:subscriptions moderator:manage:chat_messages";
   const state = Math.random().toString(36).slice(2);
 
-  res.cookie("twitch_oauth_state", state, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: false,
-    maxAge: 10 * 60 * 1000,
-  });
+  res.cookie("twitch_oauth_state", state, oauthStateCookieOptions);
 
   const twitchAuthUrl =
     `https://id.twitch.tv/oauth2/authorize` +
@@ -149,13 +149,7 @@ TwitchAuthRouter.get("/callback", async (req, res) => {
 
     const session = signSession({ sid: user.id, login: user.login });
 
-    res.cookie("sid", session, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      path: "/",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("sid", session, sessionCookieOptions);
 
     return res.redirect(`${frontendBaseUrl}/${user.login}/dashboard`);
   } catch (error) {
@@ -165,6 +159,6 @@ TwitchAuthRouter.get("/callback", async (req, res) => {
 });
 
 TwitchAuthRouter.post("/logout", requireSameOrigin, (req, res) => {
-  res.clearCookie("sid", { path: "/", sameSite: "none", secure: true });
+  res.clearCookie("sid", clearSessionCookieOptions);
   return res.json({ ok: true });
 });

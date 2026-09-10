@@ -14,5 +14,7 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/:path*"],
+  // Everything except /backend/*, which is the API proxy rewrite (next.config.ts)
+  // — running the edge middleware on every API call buys nothing here.
+  matcher: ["/((?!backend/).*)"],
 };

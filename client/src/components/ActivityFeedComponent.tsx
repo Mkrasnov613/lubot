@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import LiveEventFeed from "./LiveEventFeed";
 import LiveEventFeedSkeleton from "./LiveEventFeedSkeleton";
-import { API_BASE_URL } from "@/lib/config";
+import { SERVER_ORIGIN } from "@/lib/config";
 
 type ActivityItemType = "follow" | "sub";
 export type ActivityItem = {
@@ -19,7 +19,7 @@ export default async function ActivityFeedComponent() {
   const cookieHeader = (await cookies()).toString();
 
   const followersResponse = await fetch(
-    `${API_BASE_URL}/api/twitch/followers`,
+    `${SERVER_ORIGIN}/api/twitch/followers`,
     {
       cache: "no-store",
       headers: { cookie: cookieHeader },

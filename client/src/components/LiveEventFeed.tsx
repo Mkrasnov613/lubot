@@ -5,7 +5,7 @@ import { pushActivityItem } from "@/lib/liveEvent";
 import Image from "next/image";
 import { timeAgo } from "@/lib/utils";
 import { ActivityItem } from "@/components/ActivityFeedComponent";
-import { API_BASE_URL } from "@/lib/config";
+import { SERVER_ORIGIN } from "@/lib/config";
 import { Badge, Box, Flex, Text } from "@chakra-ui/react";
 import Panel from "@/components/Panel";
 
@@ -44,7 +44,7 @@ export default function LiveEventFeed({
    */
   const [newestId, setNewestId] = useState<string | null>(null);
 
-  const socketUrl = useMemo(() => API_BASE_URL, []);
+  const socketUrl = useMemo(() => SERVER_ORIGIN, []);
 
   useEffect(() => {
     const socket: Socket = io(`${socketUrl}/eventsub`, {

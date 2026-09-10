@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { API_BASE_URL } from "@/lib/config";
+import { SERVER_ORIGIN } from "@/lib/config";
 
 {/*type EventObjectType = {
   user_id: number;
@@ -18,7 +18,7 @@ type EventSubMessage = {
   event: unknown;
 };
 
-export function useEventSub(url = API_BASE_URL) {
+export function useEventSub(url = SERVER_ORIGIN) {
   const [events, setEvents] = useState<EventSubMessage[]>([]);
 
   useEffect(() => {

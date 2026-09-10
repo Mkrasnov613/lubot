@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 import { Box, Flex, Text } from "@chakra-ui/react";
-import { API_BASE_URL } from "@/lib/config";
+import { API_BASE_URL, SERVER_ORIGIN } from "@/lib/config";
 
 type StreamState =
   | { status: "checking" }
@@ -70,7 +70,7 @@ export default function TallyLight() {
   // Realtime transitions. `stream.online` carries started_at; `stream.offline`
   // isn't subscribed server-side yet, so going dark still needs a reload.
   useEffect(() => {
-    const socket: Socket = io(`${API_BASE_URL}/eventsub`, {
+    const socket: Socket = io(`${SERVER_ORIGIN}/eventsub`, {
       transports: ["websocket"],
       withCredentials: true,
     });

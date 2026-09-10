@@ -1,6 +1,7 @@
 import { Router } from "express";
 import axios from "axios";
 import { saveBotRow } from "../../utils/tokens/bot.js";
+import { oauthStateCookieOptions } from "../../utils/session.js";
 
 export const TwitchBotAuthRouter = Router();
 
@@ -25,12 +26,7 @@ TwitchBotAuthRouter.get("/login", (req, res) => {
 
   const state = Math.random().toString(36).slice(2);
 
-  res.cookie("lubot_oauth_state", state, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: false, // true in production over HTTPS
-    maxAge: 10 * 60 * 1000,
-  });
+  res.cookie("lubot_oauth_state", state, oauthStateCookieOptions);
 
   const url =
     `https://id.twitch.tv/oauth2/authorize` +

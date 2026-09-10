@@ -99,16 +99,46 @@ why it needs `env.js` to already have run — don't add another scattered `doten
 `db/connection.js` is now one of those modules: it reads `DATABASE_URL` at load and throws if it's
 missing, so a boot with no `.env` fails immediately and loudly rather than at the first query.
 
-Client reads `NEXT_PUBLIC_API_URL` (see `client/.env.example`) via `client/src/lib/config.ts`'s
-`API_BASE_URL` — always import that instead of hardcoding a server URL or adding a new `fetch`
-base elsewhere.
+Client reads `NEXT_PUBLIC_API_URL` (see `client/.env.example`) via `client/src/lib/config.ts`,
+which exports **two** bases and they are not interchangeable — always import one of them rather
+than hardcoding a server URL or adding a new `fetch` base elsewhere. See "The API proxy" below for
+which is which.
 
 ## Architecture
 
 **Two independent processes, no shared code.** The client is a pure consumer of the server's HTTP
 API and Socket.IO; there's no shared types package. Almost every client data fetch goes through
-`API_BASE_URL` to `server/backend/routes/` (the one exception is
+`config.ts` to `server/backend/routes/` (the one exception is
 `client/src/app/api/search/route.ts`, a thin Next.js route that proxies `yt-search`).
+
+**The API proxy.** The browser never talks to the Express server directly. `next.config.ts` rewrites
+`/backend/:path*` onto `NEXT_PUBLIC_API_URL`, so browser requests stay on the client's own origin
+and the `sid` cookie the server sets is **first-party**. Set directly by the server it would be
+host-only to the server's host and invisible to `middleware.ts` and to `cookies()` in Server
+Components — and no `Domain=` can bridge them, since `vercel.app` and `onrender.com` are both on
+the Public Suffix List. (Locally this was masked for a long time because cookies ignore ports, so
+`localhost:3000` and `localhost:5173` share one jar; dev now goes through the proxy too, so that
+accident stops hiding the bug.)
+
+Consequences:
+
+- **Browser code uses `API_BASE_URL`** (`"/backend"`, relative). Putting an absolute server URL in
+  browser code reintroduces a cross-site cookie, which Safari and Firefox block outright.
+- **Server Components and Socket.IO use `SERVER_ORIGIN`** (absolute). Node's `fetch` rejects a
+  relative URL, and Vercel rewrites do not proxy WebSocket upgrades. Socket.IO being cross-site is
+  harmless: the `/eventsub` namespace does no auth, so its `withCredentials: true` is cosmetic.
+- **`TWITCH_REDIRECT_URI` points at the client**, `<client-origin>/backend/auth/twitch/callback`,
+  and must be registered on the Twitch app. `TWITCH_BOT_REDIRECT_URI` does *not* — that flow is
+  opened directly on the server, so its state cookie is set and read on the same host.
+- External rewrites are cached by Vercel by default; `next.config.ts` sends
+  `x-vercel-enable-rewrite-caching: 0` on `/backend/*` so one streamer's authenticated response
+  can't be served to another.
+
+**Cookie options live in one place.** `utils/session.js` exports `sessionCookieOptions`,
+`clearSessionCookieOptions` and `oauthStateCookieOptions` next to the JWT lifetime they have to
+agree with. `secure` is derived from whether `FRONTEND_BASE_URL` is `https://` rather than from
+`NODE_ENV`, which neither `npm run start` nor the Dockerfile sets. Don't re-inline these options at
+a `res.cookie` call site.
 
 **Multi-tenancy.** `tenant_id` is the broadcaster's Twitch user ID. The client is tenant-scoped via
 the `[slug]` dynamic route (`client/src/app/[slug]/...`); the server resolves the tenant from the

@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import Image from "next/image";
 import EditStreamMeta from "./EditStreamMeta";
 import { revalidatePath } from "next/cache";
-import { API_BASE_URL } from "@/lib/config";
+import { SERVER_ORIGIN } from "@/lib/config";
 import { Box, Flex, Text } from "@chakra-ui/react";
 import Panel from "@/components/Panel";
 
@@ -16,7 +16,7 @@ export default async function TwitchChannelComponent({
 }) {
   const cookieHeader = (await cookies()).toString();
 
-  const channelRes = await fetch(`${API_BASE_URL}/api/twitch/channel`, {
+  const channelRes = await fetch(`${SERVER_ORIGIN}/api/twitch/channel`, {
     cache: "no-cache",
     headers: { cookie: cookieHeader },
   });
@@ -29,7 +29,7 @@ export default async function TwitchChannelComponent({
 
   // initial game art render
   const artRes = await fetch(
-    `${API_BASE_URL}/api/twitch/game-art?id=${encodeURIComponent(
+    `${SERVER_ORIGIN}/api/twitch/game-art?id=${encodeURIComponent(
       channel?.game_id ?? "",
     )}`,
     {
@@ -48,7 +48,7 @@ export default async function TwitchChannelComponent({
     const cookieHeaderInner = (await cookies()).toString();
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/twitch/channel/update`, {
+      const res = await fetch(`${SERVER_ORIGIN}/api/twitch/channel/update`, {
         method: "POST",
         headers: {
           "content-type": "application/json",
